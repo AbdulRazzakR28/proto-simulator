@@ -1,0 +1,5 @@
+flask>=3.0
+flask-socketio>=5.3
+paho-mqtt>=2.0
+protobuf>=5.0
+grpcio-tools>=1.60

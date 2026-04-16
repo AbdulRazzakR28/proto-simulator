@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  mqtt-decoder:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./protos:/app/protos
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
