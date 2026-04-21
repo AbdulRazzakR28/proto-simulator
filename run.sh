@@ -44,5 +44,15 @@ echo -e "${GREEN}✓ Setup complete!${NC}"
 echo -e "${BLUE}Starting dashboard on http://localhost:8080...${NC}"
 echo -e "${YELLOW}(Press Ctrl+C to stop)${NC}"
 
-# Run the app
-python3 app.py
+# Run the app loop (Auto-restarts if it exits with code 3)
+while true; do
+    python3 app.py
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -eq 3 ]; then
+        echo -e "${YELLOW}Reloading dashboard...${NC}"
+        sleep 0.5
+    else
+        echo -e "${BLUE}Dashboard stopped (Code: $EXIT_CODE).${NC}"
+        break
+    fi
+done

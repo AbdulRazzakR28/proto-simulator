@@ -1,1 +1,910 @@
-syntax = "proto3"; package safevue_edge; message Command { message AuthData { enum AuthAction { SIGN_IN = 0; SIGN_OUT = 1; } string device_id = 1; AuthAction type = 2; string pin = 3; } message EulaData { string version = 1; } message PanicData { enum PanicTrigger { MANUAL = 0; DISMISS = 1; FALL = 2; MOTIONLESS = 3; CRITICAL_HR = 4; } enum FallMode { IDLE = 0; ACTIVE = 1; } enum ImmobilityState { IMMOBILE = 0; INTERMITTENT = 1; } enum HrStatus { UNAVAILABLE = 0; EXTREME = 1; SPIKE = 2; STABLE = 3; CRITICAL = 4; RAPID_DROP = 5; LOW_WARNING = 6; NORMAL = 7; } enum RiskLevel { RISK_NONE = 0; RISK_HIGH = 1; RISK_CRITICAL = 2; } message FallData { FallMode mode = 1; uint32 hr_snapshot = 2; uint32 hr_baseline = 3; ImmobilityState immobility = 4; HrStatus hr_status = 5; bool crew_response = 6; } message MotionlessData { uint32 hr_snapshot = 1; uint32 noise_level = 2; HrStatus hr_status = 3; uint32 heat_index = 4; RiskLevel heat_risk = 5; RiskLevel noise_risk = 6; uint32 motionless_duration_inminutes = 7; uint32 hr_baseline = 8; } enum MotionContext { MOTION_NO_MOVEMENT = 0; MOTION_MOVEMENT_INCREASED = 1; MOTION_MOVEMENT_DECREASED = 2; } message CriticalHrData { uint32 hr_snapshot = 1; HrStatus hr_status = 2; uint32 noise_level = 3; uint32 heat_index = 4; RiskLevel heat_risk = 5; RiskLevel noise_risk = 6; MotionContext motion_context = 7; uint32 hr_baseline = 8; } string device_id = 1; bytes beacon_mac = 2; PanicTrigger trigger = 3; FallData fall_data = 4; string alert_id = 5; MotionlessData motionless_data = 6; CriticalHrData critical_hr_data = 7; } message PersonalData { uint32 dob = 1; } message WorkHoursData { enum VesselLocation { PORT = 0; SEA = 1; } string record_id = 1; uint32 start_timestamp = 2; int32 start_offset = 3; uint32 end_timestamp = 4; int32 end_offset = 5; bool auto_stopped = 6; VesselLocation vessel_location = 7; } uint32 timestamp = 1; string res_topic = 2; string user_id = 3; int32 utc_offset = 9; oneof data { PersonalData personal_data = 4; PanicData panic_data = 5; AuthData auth_data = 6; EulaData eula_data = 7; WorkHoursData wrh_data = 8; } } message CommandResponse { uint32 timestamp = 1; bool success = 2; string message = 3; } message WatchSensorData { message BeaconData { sint32 beacon_rssi = 1; uint32 beacon_battery = 2; sint32 wifi_rssi = 3; } message HrvData { repeated int32 rri = 1 [packed = true]; repeated int32 confidenceLevel = 2 [packed = true]; repeated int32 timePoint = 3 [packed = true]; } message NoiseData { sint32 dBA = 1; sint32 dBZ = 2; } message HeatIndexPoint { uint32 timestamp = 1; int32 utc_offset = 2; float temperature = 3; float humidity = 4; float heat_index = 5; } message HeatIndexData { repeated HeatIndexPoint data_points = 1; } uint32 timestamp = 1; int32 utc_offset = 2; string user_id = 3; bytes beacon_mac = 4; oneof data { BeaconData beacon = 5; float heart_rate = 6; float humidity = 7; uint32 steps = 8; float temperature = 9; HrvData hrv_data = 10; NoiseData noise_data = 11; HeatIndexData heat_index_data = 12; } } message WatchHeatIndexData { message HeatIndexPoint { uint32 timestamp = 1; int32 utc_offset = 2; float temperature = 3; float humidity = 4; float heat_index = 5; } string user_id = 1; repeated HeatIndexPoint data_points = 2; } message WatchEventData { enum EventType { GENERIC = 0; FALL = 1; STARTUP = 2; CREW_ASSIST_ACK = 3; GEOFENCE_ALERT_ACK = 4; GEOFENCE_UPDATE = 5; HEAT_ALERT_LOG = 6; NOISE_ALERT_LOG = 7; PROLONGED_HEAT = 8; GEOFENCE_BREACH = 9; WRH_NON_CONFORMANCE = 10; HIGH_HEAT = 11; HIGH_NOISE = 12; PROLONGED_COLD = 13; } message AppStartUpData { string app_version = 1; } message CrewAssistAckData { string alert_id = 1; } message FallData { bytes beacon_mac = 1; } message GeofenceAlertAckData { string geofence_id = 1; } message GeofenceUpdateData { repeated string geofence_ids = 1; } message HeatAlertLog { string alert_type = 1; string alert_band = 2; string repeat_alert = 3; float temperature = 4; float humidity = 5; uint32 timestamp_triggered = 6; uint32 timestamp_acknowledged = 7; string prompt_response = 8; } message NoiseAlertLog { string alert_type = 1; string alert_band = 2; string repeat_alert = 3; sint32 noise = 4; uint32 timestamp_triggered = 5; uint32 timestamp_acknowledged = 6; string prompt_response = 7; } message ProlongedHeatData { bytes beacon_mac = 1; } message GeofenceBreachData { bytes beacon_mac = 1; string geofence_id = 2; } message WrhNonConformanceData { bytes beacon_mac = 1; repeated string violations = 2; } message HighHeatData { bytes beacon_mac = 1; float temperature = 2; float humidity = 3; } message HighNoiseData { bytes beacon_mac = 1; sint32 noise = 2; } message ProlongedColdData { bytes beacon_mac = 1; float temperature = 2; float humidity = 3; } uint32 timestamp = 1; int32 utc_offset = 2; string user_id = 3; EventType event_type = 4; optional string event_name = 5; oneof event_value { double double_value = 6; int64 int_value = 7; string str_value = 8; bytes bytes_value = 9; AppStartUpData app_start_up = 10; CrewAssistAckData crew_assist_ack = 11; FallData fall = 12; GeofenceAlertAckData geofence_alert_ack = 13; GeofenceUpdateData geofence_update = 14; HeatAlertLog heat_alert_log = 15; NoiseAlertLog noise_alert_log = 16; ProlongedHeatData prolonged_heat = 17; GeofenceBreachData geofence_breach = 18; WrhNonConformanceData wrh_non_conformance = 19; HighHeatData high_heat = 20; HighNoiseData high_noise = 21; ProlongedColdData prolonged_cold = 22; } optional string alert_id = 23; optional string alert_band = 24; } message AppVersionData { string name = 1; string version = 2; string version_code = 3; string display_name = 4; string apk_url = 5; } message AllGeofencesData { enum GeofenceStatus { ENABLED = 0; DISABLED = 1; TERMINATED = 2; } message GeofenceData { string id = 1; string title = 2; string description = 3; repeated string crew_member_ids = 4; string permit_id = 5; repeated string zone_ids = 6; GeofenceStatus status = 7; } repeated GeofenceData geofences = 1; } message EdgeTimeData { uint32 timestamp = 1; } message VesselOffsetData { int32 utc_offset = 1; } message WatchUserData { message EulaData { uint32 timestamp = 1; string version = 2; } string device_id = 1; string user_id = 2; string first_name = 3; string last_name = 4; string rank = 5; EulaData eula = 6; } message WrhSummaryData { enum VesselLocation { PORT = 0; SEA = 1; } message WrhRecord { string record_id = 1; string user_id = 2; VesselLocation vessel_location = 3; uint32 start_time = 4; int32 start_offset = 5; bytes start_mac = 6; uint32 end_time = 7; int32 end_offset = 8; bytes end_mac = 9; bool auto_stopped = 10; } repeated WrhRecord today = 1; repeated WrhRecord yesterday = 2; } message AllZonesData { message BeaconData { string id = 1; bytes mac = 2; } message ZoneData { string id = 1; string name = 2; repeated BeaconData beacons = 3; } repeated ZoneData zones = 1; } message BroadcastMessageData { message SenderData { string id = 1; string name = 2; string rank = 3; } string id = 1; uint32 timestamp = 2; SenderData sender = 3; string message_body = 4; } message PanicAckData { message AckUserData { string id = 1; string first_name = 2; string last_name = 3; string rank = 4; } string id = 1; uint32 timestamp = 2; AckUserData ack_by = 3; string alert_id = 4; } message WatchMetricData { message BatteryData { enum BatteryHealth { COLD = 0; DEAD = 1; GOOD = 2; OVERHEAT = 3; OVER_VOLTAGE = 4; UNKNOWN = 5; UNSPECIFIED_FAILURE = 6; } float level = 1; float temperature = 2; BatteryHealth health = 3; bool is_charging = 4; } message ScreenData { uint32 active = 1; } message WifiData { bytes bssid = 1; sint32 rssi = 2; bytes device_mac = 3; } uint32 timestamp = 1; int32 utc_offset = 2; oneof data { BatteryData battery = 3; WifiData wifi = 4; ScreenData screen = 5; } } message AllAlertConfigData { message AlertConfigData { message HighData { float min_threshold = 1; float max_threshold = 2; string condition_persistence = 3; string repeat_interval = 4; int32 repeat_alerts_count = 5; string suppression_duration_after_yes = 6; string high_repeat_yes = 7; string high_repeat_no = 8; string high_repeat_no_first_interval = 9; } message FallData { float heart_rate_min = 1; float heart_rate_max = 2; float heart_rate_variation = 3; float free_fall_threshold = 4; float impact_threshold = 5; float impact_threshold_idle = 6; float posture_angle_threshold = 7; float immobility_accel_threshold = 8; float immobility_gyro_threshold = 9; int32 free_fall_count = 10; } message ExtremeData { float threshold = 1; string condition_persistence = 2; string repeat_interval = 3; int32 repeat_alerts_count = 4; string suppression_duration_after_yes = 5; string extreme_repeat_yes = 6; string extreme_repeat_no = 7; string extreme_repeat_no_first_interval = 8; } message HeatData { HighData high = 1; ExtremeData extreme = 2; } message NoiseData { HighData high = 1; ExtremeData extreme = 2; } message ColdData { HighData high = 1; ExtremeData extreme = 2; } HeatData heat = 1; ColdData cold = 2; NoiseData noise = 3; FallData fall = 4; } } message MotionlessConfigData { int32 motionless_duration_seconds = 1; int32 stillness_window_seconds = 2; float accel_std_threshold_g = 3; float motion_reset_delta_g = 4; float gyro_deg_per_sec_threshold = 5; int32 alert_cooldown_seconds = 6; int32 evaluation_interval_ms = 7; int32 user_response_window = 8; int32 total_time_to_escalation = 9; int32 total_time_to_escalation_risk = 10; int32 hr_low_warning_threshold = 11; int32 hr_critical_threshold = 12; int32 hr_rapid_drop_percentage = 13; int32 hr_normal_min = 14; int32 hr_normal_max = 15; } message CriticallyLowHrConfigData { int32 critically_low_hr_threshold_bpm = 1; int32 critically_low_hr_resting_cutoff_threshold_bpm = 2; int32 validation_scan_seconds = 3; int32 validation_pause_seconds = 4; int32 validation_duration_minutes = 5; int32 validation_sample_count = 6; int32 rapid_drop_percent = 7; int32 rapid_drop_falling_threshold_bpm = 8; int32 percent_factor = 9; int32 min_emit_interval_seconds = 10; int32 min_hr_for_percent_calculation = 11; }
+syntax = "proto3";
+package safevue_edge;
+
+// Command request topics should follow this structure:
+// `cmd/<destination-id>/<context>/<req-type>`
+//
+// where:
+// - `req-type` would be a static value of `req` for most cases. In a more
+// complex system `req-type` could be used to route the component to the desired
+// subcomponents.
+//
+// Data topics should follow this structure:
+// `dt/<source-id>/<context>/<data-type>`
+//
+// where:
+// - `context` could be the device id if source-id=edge. A data topic in the
+// form of `dt/edge/<device-id>/<data-type>` is for the edge API to communicate
+// to subscribers the current state of the <data-type> for <device-id> on edge
+//
+// Note:
+// - `cmd/<destination-id>/<context>/<req-type>` is chosen over the recommmended
+// structure in the AWS documentation i.e. `cmd/<context>/<destination-id>/<req-type>`
+// because it is simpler to do subscribe to all command response topics relevant
+// to a watch by subscribing to `cmd/<watch-id>/#`
+// - the data topic structure is kept similar to the command topic structure for
+// consistency
+//
+// Ref:
+// - https://docs.aws.amazon.com/whitepapers/latest/designing-mqtt-topics-aws-iot-core/mqtt-design-best-practices.html
+
+message Command {
+    /**
+     * Sign in/out
+     *
+     * Req. topic: `cmd/edge/auth/req`
+     *
+     * MQTT properties: retained=false, qos=1
+     *
+     * Payload:
+     * - res_topic: Should be set to `cmd/<watch-id>/auth/res`
+     * - data: Only `auth_data` should be set in Command
+     *
+     * Result topic: `dt/edge/<watch-id>/user`
+     *
+     * Edge server will publish current signed in user to result topic. App
+     * should check res_topic if the command is successful and check the result
+     * topic for the user details.
+     **/
+    message AuthData {
+        enum AuthAction {
+            SIGN_IN = 0;
+            SIGN_OUT = 1;
+        }
+
+        string device_id = 1;   /// Device id i.e. MQTT client id
+        AuthAction type = 2;    /// SIGN_IN or SIGN_OUT
+        string pin = 3;         /// Must be set when type=SIGN_IN
+    }
+
+    /**
+     * Set EULA version
+     *
+     * Req. topic: `cmd/edge/user/eula`
+     *
+     * MQTT properties: retained=false, qos=1
+     *
+     * Payload:
+     * - res_topic: Should be set to `cmd/<watch-id>/user/eula`
+     * - data: Only `eula_data` should be set in Command
+     *
+     * Result topic: `dt/edge/<watch-id>/user`
+     *
+     * Edge server will publish current signed in user with updated eula to
+     * result topic. App should check res_topic if the command is successful
+     * and check the result topic for the user's updated eula details.
+     */
+    message EulaData {
+        string version = 1;     /// EULA version
+    }
+
+    /**
+     * Trigger/dismiss panic
+     *
+     * Req. topic: `cmd/edge/panic/req`
+     *
+     * MQTT properties: retained=false, qos=1
+     *
+     * Payload:
+     * - res_topic: Should be set to `cmd/<watch-id>/panic/res`
+     * - data: Only `panic_data` should be set in Command
+     *
+     * Set `trigger` to:
+     * - MANUAL to trigger crew assist manually
+     * - DISMISS to dismiss previously triggered crew assist
+     * - FALL for crew assist triggered automatically due to a suspected fall
+     * - MOTIONLESS for crew assist triggered automatically due to motionless detection
+     * - CRITICAL_HR for crew assist triggered automatically due to critically low HR
+     **/
+    message PanicData {
+        enum PanicTrigger {
+            MANUAL = 0;       /// Crew assist triggered manually
+            DISMISS = 1;      /// Dismiss previously triggered crew assist
+            FALL = 2;         /// Crew assist triggered automatically due to a suspected fall
+            MOTIONLESS = 3;   /// Motionless triggered when crew is immobile
+            CRITICAL_HR = 4;  /// Crew assist triggered automatically due to critically low HR
+        }
+
+        enum FallMode {
+            IDLE = 0;
+            ACTIVE = 1;
+        }
+
+        enum ImmobilityState {
+            IMMOBILE = 0;
+            INTERMITTENT = 1;
+        }
+
+        enum HrStatus {
+            UNAVAILABLE = 0;
+            EXTREME = 1;
+            SPIKE = 2;
+            STABLE = 3;
+            CRITICAL = 4;
+            RAPID_DROP = 5;
+            LOW_WARNING = 6;
+            NORMAL = 7;
+        }
+
+        enum RiskLevel {
+            RISK_NONE = 0;
+            RISK_HIGH = 1;
+            RISK_CRITICAL = 2;
+        }
+
+        message FallData {    
+            FallMode mode = 1;           /// IDLE or ACTIVE
+            uint32 hr_snapshot = 2;      /// Current HR at detection
+            uint32 hr_baseline = 3;      /// Baseline HR
+            ImmobilityState immobility = 4;
+            HrStatus hr_status = 5;
+            bool crew_response = 6;  // true = crew response OK, false = not OK
+        }
+
+         message MotionlessData {
+            uint32 hr_snapshot = 1;   /// Heart rate snapshot
+            uint32 noise_level = 2;   /// Current noise level (dB)
+            HrStatus hr_status = 3;   /// Heart rate classification
+            uint32 heat_index = 4;    /// Heat index measurement
+            RiskLevel heat_risk = 5;  /// Heat exposure risk
+            RiskLevel noise_risk = 6; /// Noise exposure risk
+            uint32 motionless_duration_inminutes = 7; 
+            uint32 hr_baseline = 8;      /// Baseline HR
+        }
+
+        enum MotionContext {
+            MOTION_NO_MOVEMENT        = 0;  /// No movement detected
+            MOTION_MOVEMENT_INCREASED = 1;  /// Movement increased
+            MOTION_MOVEMENT_DECREASED = 2;  /// Movement decreased
+        }
+
+        message CriticalHrData {
+            uint32 hr_snapshot      = 1;  /// BPM value at detection e.g. 38
+            HrStatus hr_status      = 2;  /// Heart rate classification
+            uint32 noise_level      = 3;  /// Noise level in dB e.g. 90
+            uint32 heat_index       = 4;  /// Heat index in °C e.g. 45
+            RiskLevel heat_risk     = 5;  /// Heat exposure risk level
+            RiskLevel noise_risk    = 6;  /// Noise exposure risk level
+            MotionContext motion_context = 7; /// Motion context at detection
+            uint32 hr_baseline = 8;      /// Baseline HR
+        }
+
+        string device_id = 1;       /// MQTT client id
+        bytes beacon_mac = 2;       /// MAC address as raw bytes
+        PanicTrigger trigger = 3;   /// MANUAL, DISMISS, FALL, MOTIONLESS, CRITICAL_HR
+        FallData fall_data = 4;     /// Only set when trigger == FALL
+        string alert_id = 5;
+        MotionlessData motionless_data = 6;  /// Only set when trigger == MOTIONLESS
+        CriticalHrData critical_hr_data = 7; /// Only set when trigger == CRITICAL_HR
+}
+
+    /**
+     * Set date of birth
+     *
+     * Req. topic: `cmd/edge/user/req`
+     *
+     * MQTT properties: retained=false, qos=1
+     *
+     * Payload:
+     * - res_topic: Should be set to `cmd/<watch-id>/user/res`
+     * - data: Only `personal_data` should be set in `Command`
+     **/
+    message PersonalData {
+        uint32 dob = 1;     /// 1970-12-31 will be encoded as 19701231
+    }
+
+    /**
+     * Log work hours
+     *
+     * Req. topic: `cmd/edge/wrh/req`
+     *
+     * MQTT properties: retained=false, qos=1
+     *
+     * Payload:
+     * - res_topic: Should be set to `cmd/<watch-id>/wrh/res`
+     * - data: Only `wrh_data` should be set in `Command`
+     */
+    message WorkHoursData {
+        enum VesselLocation {
+            PORT = 0;
+            SEA = 1;
+        }
+
+        string record_id = 1;
+        uint32 start_timestamp = 2; /// Start time in unix timestamp in seconds
+        int32 start_offset = 3;
+        uint32 end_timestamp = 4; /// Stop time in unix timestamp in seconds
+        int32 end_offset = 5;
+        bool auto_stopped = 6;
+        VesselLocation vessel_location = 7;
+    }
+
+    uint32 timestamp = 1;   /// unix timestamp in seconds
+    string res_topic = 2;   /// response topic i.e. where the requester is listening for response
+    string user_id = 3;
+    int32 utc_offset = 9;
+    oneof data {
+        PersonalData personal_data = 4;
+        PanicData panic_data = 5;
+        AuthData auth_data = 6;
+        EulaData eula_data = 7;
+        WorkHoursData wrh_data = 8;
+    }
+}
+
+message CommandResponse {
+    uint32 timestamp = 1;   /// unix timestamp in seconds from Command request
+    bool success = 2;       /// True if successful, False otherwise
+    string message = 3;     /// error message if `success` is False
+}
+
+/**
+ * Watch sensor data
+ *
+ * MQTT properties: retained=false, qos=0
+ *
+ * ### Sensors
+ *
+ * #### Beacon
+ * - topic: `dt/<watch-id>/sensor/beacon`
+ * - payload: Only `beacon` should be set
+ *
+ * #### Heart rate
+ * - topic: `dt/<watch-id>/sensor/heartrate`
+ * - payload: Only `heart_rate` should be set
+ *
+ * #### Heart rate variability
+ * - topic: `dt/<watch-id>/sensor/hrv`
+ * - payload: Only `hrv_rri` should be set
+ *
+ * #### Humidity
+ * - topic: `dt/<watch-id>/sensor/humidity`
+ * - payload: Only `humidity` should be set
+ *
+ * #### Noise
+ * - topic: `dt/<watch-id>/sensor/noise`
+ * - payload: Only `noise_data` should be set
+ *
+ * #### Steps
+ * - topic: `dt/<watch-id>/sensor/steps`
+ * - payload: Only `steps` should be set
+ *
+ * #### Temperature
+ * - topic: `dt/<watch-id>/sensor/temp`
+ * - payload: Only `temperature` should be set
+ *
+ * #### Heat index
+ * - topic: `dt/<watch-id>/sensor/heatIndex`
+ * - payload: Only `heat_index_data` should be set (array of points with timestamp, temperature, humidity, heat_index)
+ **/
+message WatchSensorData {
+    message BeaconData {
+        sint32 beacon_rssi = 1;
+        uint32 beacon_battery = 2;
+        sint32 wifi_rssi = 3;  /// device wifi rssi when the beacon was detected
+        bool is_working = 4;  /// crew work mode to track lone worker
+    }
+
+    message HrvData {
+        repeated int32 rri = 1 [packed = true];
+        repeated int32 confidenceLevel = 2 [packed = true];
+        repeated int32 timePoint = 3 [packed = true];
+    }
+
+    message NoiseData {
+        sint32 dBA = 1;
+        sint32 dBZ = 2;
+    }
+
+    /// Heat index: array of (timestamp, temperature, humidity, heat_index) points
+    message HeatIndexPoint {
+        uint32 timestamp = 1;   /// unix timestamp in seconds
+        int32 utc_offset = 2;   /// vessel UTC offset
+        float temperature = 3;  /// temperature in Celsius
+        float humidity = 4;     /// relative humidity percentage
+        float heat_index = 5;   /// calculated heat index in Celsius
+    }
+    message HeatIndexData {
+        repeated HeatIndexPoint data_points = 1;
+    }
+
+    uint32 timestamp = 1;  /// unix timestamp in seconds
+    int32 utc_offset = 2;  /// vessel UTC offset
+    string user_id = 3;
+    bytes beacon_mac = 4;  /// MAC address in bytes e.g. 'AA:BB:CC:DD:EE:FF' becomes [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]
+
+    oneof data {
+        BeaconData beacon = 5;
+        float heart_rate = 6;
+        float humidity = 7;
+        uint32 steps = 8;
+        float temperature = 9;
+        HrvData hrv_data = 10;
+        NoiseData noise_data = 11;
+        HeatIndexData heat_index_data = 12;
+    }
+}
+
+/**
+ * Watch heat index sensor data
+ *
+ * MQTT properties: retained=false, qos=0
+ *
+ * #### Heat Index
+ * - topic: `dt/<watch-id>/sensor/heatIndex`
+ * - beacon is resolved from PG beacon_data by user_id; do not send beacon_mac in payload
+ */
+message WatchHeatIndexData {
+
+    message HeatIndexPoint {
+        uint32 timestamp = 1;   /// unix timestamp in seconds
+        int32 utc_offset = 2;   /// vessel UTC offset
+        float temperature = 3;  /// temperature in Celsius
+        float humidity = 4;     /// relative humidity percentage
+        float heat_index = 5;   /// calculated heat index in Celsius
+    }
+
+    string user_id = 1;
+    repeated HeatIndexPoint data_points = 2;
+}
+
+/**
+ * Watch event data
+ *
+ * Data topic:  `dt/<watch-id>/evt`
+ *
+ * MQTT properties: retained=false, qos=0
+ *
+ * ### Events
+ *
+ * #### Generic
+ * - Required fields:
+ *      - timestamp
+ *      - utc_offset
+ *      - user_id
+ *      - event_type: FALL
+ *      - event_name
+ *      - double_value/int_value/str_value/bytes_value
+ *
+ * #### Fall
+ * - Required fields:
+ *      - timestamp
+ *      - utc_offset
+ *      - user_id
+ *      - event_type: FALL
+ *      - fall
+ *
+ * #### Watch app start up
+ * - Required fields:
+ *      - timestamp
+ *      - utc_offset
+ *      - user_id
+ *      - event_type: STARTUP
+ *      - app_start_up
+ *
+ * #### Crew assist ack received
+ * - Required fields:
+ *      - timestamp
+ *      - utc_offset
+ *      - user_id
+ *      - event_type: CREW_ASSIST_ACK
+ *      - crew_assist_ack
+ *
+ * #### Geofence alert ack'ed by watch user
+ * - Required fields:
+ *      - timestamp
+ *      - utc_offset
+ *      - user_id
+ *      - event_type: GEOFENCE_ALERT_ACK
+ *      - geofence_alert_ack
+ *
+ * #### Updated geofences received by watch
+ * - Required fields:
+ *      - timestamp
+ *      - utc_offset
+ *      - user_id
+ *      - event_type: GEOFENCE_UPDATE
+ *      - geofence_update
+ **/
+message WatchEventData {
+    enum EventType {
+        GENERIC = 0;    /// generic event i.e. for adhoc event measurement without code change
+        FALL = 1;       /// fall event
+        STARTUP = 2;    /// watch app startup event
+        CREW_ASSIST_ACK = 3; /// crew assist ACK (from dashboard) is received on watch
+        GEOFENCE_ALERT_ACK = 4; /// geofence alert ack'ed by watch user
+        GEOFENCE_UPDATE = 5;   /// list of geofences updated on wach
+        HEAT_ALERT_LOG = 6;   // heat index alert logs
+        NOISE_ALERT_LOG = 7;  // noise alert logs
+        PROLONGED_HEAT = 8;   /// prolonged heat alert event
+        GEOFENCE_BREACH = 9;   /// breach geofence location event
+        WRH_NON_CONFORMANCE = 10; /// Work rest hour non conformance alerts
+        HIGH_HEAT = 11;   /// high heat alert event
+        HIGH_NOISE = 12;  /// high noise alert event
+        PROLONGED_COLD = 13;  /// prolonged cold alert event
+    }
+
+    /// Watch app starts up
+    message AppStartUpData {
+        string app_version = 1;
+    }
+
+    /// Crew assist ack from dashboard received on watch
+    message CrewAssistAckData {
+        string alert_id = 1;
+    }
+
+    /// Suspected fall on watch
+    message FallData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+    }
+
+    /// Geofence alert ack'ed by watch user
+    message GeofenceAlertAckData {
+        string geofence_id = 1;
+    }
+
+    /// Updated list of geofences received by watch
+    message GeofenceUpdateData {
+        repeated string geofence_ids = 1;   /// geofence ids in the list
+    }
+
+    ///heat index alert logs
+    message HeatAlertLog {
+        string alert_type = 1;  // "heat" or "cold"
+        string alert_band = 2;  // "high" or "critical"
+        string repeat_alert = 3; // "Yes" or "No"
+
+        float temperature = 4;  // "T" or actual value
+        float humidity = 5;     // "RH" or actual value
+
+        uint32 timestamp_triggered = 6;       // ISO format string
+        uint32 timestamp_acknowledged = 7;    // ISO string or ""
+        string prompt_response = 8;           // "Yes" | "Not Yet" | "NA"
+    }
+
+    ///noise alert logs
+    message NoiseAlertLog {
+        string alert_type = 1;      // always "noise"
+        string alert_band = 2;      // "high" or "critical"
+        string repeat_alert = 3;    // "Yes" or "No"
+
+        sint32 noise = 4;           // "DB" or actual dB value
+
+        uint32 timestamp_triggered = 5;       // ISO format
+        uint32 timestamp_acknowledged = 6;    // ISO format or ""
+        string prompt_response = 7;           // "Yes" | "Not Yet" | "NA"
+    }
+
+    /// Prolonged heat alert event
+    message ProlongedHeatData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+    }
+
+    /// Geofence breach event
+    message GeofenceBreachData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+        string geofence_id = 2; /// Geofence id that was breached
+    }
+
+    /// Work rest hour non conformance alert event
+    message WrhNonConformanceData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+        repeated string violations = 2;   /// List of violation types: WORK_MORE_THAN_DAILY_LIMIT, MORE_THAN_ONE_REST_PERIODS_BUT_LONGEST_REST_LESS_THAN_6_HOURS, MORE_THAN_ONE_REST_PERIODS_BUT_LONGEST_TWO_RESTS_LESS_THAN_10_HOURS, MORE_THAN_LEGAL_WORK_HOURS_IN_THE_PERIOD
+    }
+
+    /// High heat alert event
+    message HighHeatData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+        float temperature = 2;   /// Temperature value
+        float humidity = 3;     /// Humidity value
+    }
+
+    /// High noise alert event
+    message HighNoiseData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+        sint32 noise = 2;       /// Noise level in dB
+    }
+
+    /// Prolonged cold alert event
+    message ProlongedColdData {
+        bytes beacon_mac = 1;   /// Last detected beacon if available
+        float temperature = 2;   /// Temperature value
+        float humidity = 3;     /// Humidity value
+    }
+
+    uint32 timestamp = 1;   /// unix timestamp in seconds
+    int32 utc_offset = 2;   /// vessel UTC offset
+    // device id is not necessary as it can be obtained from the topic
+    string user_id = 3;     /// user id; for events that are user specific
+    EventType event_type = 4;
+    optional string event_name = 5;  /// should only be set if event_type is GENERIC
+    oneof event_value {
+        double double_value = 6;
+        int64 int_value = 7;
+        string str_value = 8;
+        bytes bytes_value = 9;
+        AppStartUpData app_start_up = 10;
+        CrewAssistAckData crew_assist_ack = 11;
+        FallData fall = 12;
+        GeofenceAlertAckData geofence_alert_ack = 13;
+        GeofenceUpdateData geofence_update = 14;
+        HeatAlertLog heat_alert_log = 15;
+        NoiseAlertLog noise_alert_log = 16;
+        ProlongedHeatData prolonged_heat = 17;
+        GeofenceBreachData geofence_breach = 18;
+        WrhNonConformanceData wrh_non_conformance = 19;
+        HighHeatData high_heat = 20;
+        HighNoiseData high_noise = 21;
+        ProlongedColdData prolonged_cold = 22;
+    }
+    optional string alert_id = 23;     
+    optional string alert_band = 24;   
+}
+
+/**
+ * Current watch version
+ *
+ * Data topic: `dt/edge/app/watch/version`
+ **/
+message AppVersionData {
+    string name = 1;            /// App package name
+    string version = 2;         /// App version
+    string version_code = 3;    /// App version code
+    string display_name = 4;
+    string apk_url = 5;
+}
+
+/**
+ * Current active geofence
+ *
+ * Data topic: `dt/edge/geofence/active`
+ **/
+message AllGeofencesData {
+    enum GeofenceStatus {
+        ENABLED = 0;
+        DISABLED = 1;
+        TERMINATED = 2;
+    }
+
+    message GeofenceData {
+        string id = 1;      /// Geofence external id
+        string title = 2;
+        string description = 3;
+        repeated string crew_member_ids = 4;
+        string permit_id = 5;
+        repeated string zone_ids = 6;
+        GeofenceStatus status = 7;
+    }
+
+    repeated GeofenceData geofences = 1;
+}
+
+/**
+ * Current server time.
+ *
+ * This is updated every second. The watch app should unsubscribe after it
+ * receives the current time mesage.
+ *
+ * Data topic: `dt/edge/time`
+ **/
+message EdgeTimeData {
+    uint32 timestamp = 1;   /// unix timestamp in seconds
+}
+
+/**
+ * Current vessel offset.
+ *
+ * Data topic: `dt/edge/vessel/offset`
+ **/
+message VesselOffsetData {
+    int32 utc_offset = 1;   /// vessel UTC offset
+}
+
+/**
+ * Current logged in user on watch.
+ *
+ * This is set by the edge API.
+ *
+ * Data topic: `dt/edge/<watch-id>/user`
+ */
+message WatchUserData {
+    message EulaData {
+        uint32 timestamp = 1;   /// unix timestamp in seconds
+        string version = 2;     /// Last accepted EULA version
+    }
+
+    string device_id = 1;   /// Device id i.e. MQTT client id
+    string user_id = 2;     /// User id; for events that are user specific
+    string first_name = 3;
+    string last_name = 4;
+    string rank = 5;
+    EulaData eula = 6;
+}
+
+/**
+ * Work rest hour summary for user
+ *
+ * Data topic: `dt/edge/user<user-id>/wrh`
+ */
+message WrhSummaryData {
+    enum VesselLocation {
+        PORT = 0;
+        SEA = 1;
+    }
+
+    message WrhRecord {
+        string record_id = 1;
+        string user_id = 2;
+        VesselLocation vessel_location = 3;
+        uint32 start_time = 4;
+        int32 start_offset = 5;
+        bytes start_mac = 6;    /// MAC address in bytes e.g. 'AA:BB:CC:DD:EE:FF' becomes [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]
+        uint32 end_time = 7;
+        int32 end_offset = 8;
+        bytes end_mac = 9;    /// MAC address in bytes e.g. 'AA:BB:CC:DD:EE:FF' becomes [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]
+        bool auto_stopped = 10; /// Flag to indicate if this record was stopped automatically
+    }
+
+    repeated WrhRecord today = 1;
+    repeated WrhRecord yesterday = 2;
+}
+
+/**
+ * Current zones and beacons.
+ *
+ * Data topic: `dt/edge/zone/all`
+ **/
+message AllZonesData {
+    message BeaconData {
+        string id = 1;      /// beacon id
+        bytes mac = 2;      /// MAC address in bytes e.g. 'AA:BB:CC:DD:EE:FF' becomes [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]
+    }
+
+    message ZoneData {
+        string id = 1;                      /// zone id
+        string name = 2;                    /// zone name
+        repeated BeaconData beacons = 3;    /// beacons in zone
+    }
+
+    repeated ZoneData zones = 1;
+}
+
+/**
+ * Broadcast message
+ *
+ * Data topic: `dt/edge/<watch-id>/message`
+ **/
+message BroadcastMessageData {
+    message SenderData {
+        string id = 1;      /// sender id
+        string name = 2;    /// sender name
+        string rank = 3;    /// sender rank
+    }
+    string id = 1;
+    uint32 timestamp = 2;   /// message sent timestamp; unix timestamp in seconds
+    SenderData sender = 3;
+    string message_body = 4;
+}
+
+/**
+ * Acknowledge panic message
+ *
+ * Data topic: `dt/edge/<watch-id>/panic-ack`
+ */
+message PanicAckData {
+    message AckUserData {
+        string id = 1;          /// Acknowledger user id
+        string first_name = 2;  /// Acknowledger first name
+        string last_name = 3;   /// Acknowledger last name
+        string rank = 4;        /// Acknowledger rank
+    }
+
+    string id = 1;          /// Alert id
+    uint32 timestamp = 2;   /// message sent timestamp; unix timestamp in seconds
+    AckUserData ack_by = 3;
+    string alert_id = 4;  /// alert id passefrom request
+}
+
+/**
+ * Watch metric data
+ * MQTT properties: retained=false, qos=1
+ *
+ * ### Metrics
+ * #### Battery
+ * - topic: `dt/<watch-id>/metric/battery
+ * - payload: Only `battery` should be set
+ *
+ * #### Screen
+ * - topic: `dt/<watch-id>/metric/screen
+ * - payload: Only `screen` should be set
+ *
+ * #### WiFi
+ * - topic: `dt/<watch-id>/metric/wifi
+ * - payload: Only `wifi` should be set
+ */
+ message WatchMetricData {
+    message BatteryData {
+        enum BatteryHealth {
+            COLD = 0;
+            DEAD = 1;
+            GOOD = 2;
+            OVERHEAT = 3;
+            OVER_VOLTAGE = 4;
+            UNKNOWN = 5;
+            UNSPECIFIED_FAILURE = 6;
+        }
+
+        float level = 1;            /// battery level
+        float temperature = 2;      /// battery temperature
+        BatteryHealth health = 3;   /// battery health
+        bool is_charging = 4;       /// is device charging?
+    }
+
+    message ScreenData {
+        uint32 active = 1;      /// duration when the display is active in milliseconds
+    }
+
+    message WifiData {
+        bytes bssid = 1;      /// MAC address of the connected AP
+        sint32 rssi = 2;      /// AP RSSI
+        bytes device_mac = 3; /// MAC address of the watch
+    }
+
+    uint32 timestamp = 1;  /// unix timestamp in seconds
+    int32 utc_offset = 2;  /// vessel UTC offset
+
+    oneof data {
+        BatteryData battery = 3;
+        WifiData wifi = 4;
+        ScreenData screen = 5;
+    }
+}
+
+/**
+ * Lone Worker mode
+ *
+ * Data topic: `dt/edge/crew/{watch-id}/lone-worker`
+**/
+message LoneWorkerData {
+  string watch_id = 1;
+  string user_id = 2;
+  string beacon_mac = 3;
+  int64 timestamp = 4; // Epoch time in milliseconds
+  bool is_lone_worker = 5; // true = entered lone worker mode, false = exited
+}
+
+/**
+ * Alert config.
+ *
+ * Data topic: `dt/edge/alert/config`
+ **/
+
+
+message AllAlertConfigData {
+
+  message AlertConfigData {
+    message HighData {
+    float min_threshold = 1;
+    float max_threshold = 2;
+    string condition_persistence = 3;
+    string repeat_interval = 4;
+    int32 repeat_alerts_count = 5;
+    string suppression_duration_after_yes = 6;
+    string high_repeat_yes = 7;
+    string high_repeat_no = 8;
+    string high_repeat_no_first_interval = 9;
+  }
+
+  message FallData {
+    float heart_rate_min = 1;
+    float heart_rate_max = 2;
+    float heart_rate_variation = 3;
+    float free_fall_threshold = 4;
+    float impact_threshold = 5;
+    float impact_threshold_idle = 6;
+    float posture_angle_threshold = 7;
+    float immobility_accel_threshold = 8;
+    float immobility_gyro_threshold = 9;
+    int32 free_fall_count = 10;
+    int32 user_response_window_in_seconds = 11;
+  }
+
+    message ExtremeData {
+        float threshold = 1;
+        string condition_persistence = 2;
+        string repeat_interval = 3;
+        int32 repeat_alerts_count = 4;
+        string suppression_duration_after_yes = 5;
+        string extreme_repeat_yes = 6;
+        string extreme_repeat_no = 7;
+        string extreme_repeat_no_first_interval = 8;
+    }
+
+    message HeatData {
+        HighData high = 1;
+        ExtremeData extreme = 2;
+    }
+
+    message NoiseData {
+        HighData high = 1;
+        ExtremeData extreme = 2;
+    }
+
+    message ColdData {
+        HighData high = 1;
+        ExtremeData extreme = 2;
+    }
+
+    HeatData heat = 1;   /// heat
+    ColdData cold = 2;   /// cold
+    NoiseData noise = 3; /// noise
+    FallData fall = 4; /// fall
+  }
+}
+
+/**
+ * Alert config.
+ *
+ * Data topic: `dt/edge/alert/config/motionless`
+ **/
+
+ message MotionlessConfigData {
+  int32 motionless_duration_seconds = 1;
+  int32 stillness_window_seconds = 2;
+  float accel_std_threshold_g = 3;
+  float motion_reset_delta_g = 4;
+  float gyro_deg_per_sec_threshold = 5;
+  int32 alert_cooldown_seconds = 6;
+  int32 evaluation_interval_ms = 7;
+  int32 user_response_window_in_seconds = 8;
+  int32 total_time_to_escalation_in_minutes = 9;
+  int32 total_time_to_escalation_risk_in_minutes = 10;
+  int32 hr_low_warning_threshold = 11;
+  int32 hr_critical_threshold = 12;
+  int32 hr_rapid_drop_percentage = 13;
+  int32 hr_normal_min = 14;
+  int32 hr_normal_max = 15;
+}
+
+/**
+ * Critically low HR alert configuration thresholds.
+ *
+ * Data topic: `dt/edge/alert/config/critically-low-hr`
+ **/
+message CriticallyLowHrConfigData {
+  int32 critically_low_hr_threshold_bpm = 1;
+  int32 critically_low_hr_resting_cutoff_threshold_bpm = 2;
+  int32 validation_scan_seconds = 3;
+  int32 validation_pause_seconds = 4;
+  int32 validation_duration_minutes = 5;
+  int32 validation_sample_count = 6;
+  int32 rapid_drop_percent = 7;
+  int32 rapid_drop_falling_threshold_bpm = 8;
+  int32 percent_factor = 9;
+  int32 min_emit_interval_seconds = 10;
+  int32 min_hr_for_percent_calculation = 11;
+}
+
+ /**
+  * Config Data Request .
+  *
+  * Topic: `cmd/edge/request/data`
+ **/
+ message RequestData {
+
+  DataRequestType type = 1;
+
+  enum DataRequestType {
+    DATA_REQUEST_TYPE_UNSPECIFIED = 0;
+
+    BEACON = 1;
+    CONFIG_DATA = 2;
+    MOTIONLESS = 3;
+    CRITICAL_HR = 4;
+  }
+}
+
+
+
+
