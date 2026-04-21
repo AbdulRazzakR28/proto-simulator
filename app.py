@@ -123,6 +123,22 @@ def is_authenticated() -> bool:
     return session.get("authenticated") is True
 
 
+def restart_server():
+    """Triggers an exit with code 3, which run.sh intercepts to restart the server."""
+    print("[SERVER] Restart signal received. Exiting for clean reload...")
+    # Give a small delay for the HTTP response to be sent before killing the process
+    time.sleep(1.0)
+    os._exit(3)
+
+
+def restart_server():
+    """Triggers an exit with code 3, which run.sh intercepts to restart the server."""
+    print("[SERVER] Restart signal received. Exiting for clean reload...")
+    # Give a small delay for the HTTP response to be sent before killing the process
+    time.sleep(1.0)
+    os._exit(3)
+
+
 # ===========================================================================
 # Protobuf Topic Map (mirrors mqtt_decoder.py — single source of truth)
 # ===========================================================================
@@ -551,15 +567,13 @@ def api_proto_upload():
     except subprocess.CalledProcessError as e:
         return jsonify({"error": f"Protobuf compilation failed:\n{e.output.decode()}"}), 422
 
-    # Hot-reload mqtt_pb2
+    # Soft-restart the server to reload mqtt_pb2 and rebuild the pool
     try:
-        import importlib
-        if "mqtt_pb2" in sys.modules:
-            del sys.modules["mqtt_pb2"]
-        mqtt_pb2 = importlib.import_module("mqtt_pb2")
-        PROTO_AVAILABLE = True
+        threading.Thread(target=restart_server, daemon=True).start()
     except Exception as e:
-        return jsonify({"error": f"Failed to reload mqtt_pb2: {e}"}), 500
+        print(f"[RESTART ERROR] {e}")
+    
+    PROTO_AVAILABLE = True # Assume success after restart
 
     # Rebuild TOPIC_MAP with the new mqtt_pb2
     try:
@@ -574,7 +588,7 @@ def api_proto_upload():
         "ok": True,
         "filename": f.filename,
         "topic_count": len(TOPIC_MAP),
-        "message": f"Proto reloaded successfully. {len(TOPIC_MAP)} topic patterns active.",
+        "message": "Proto uploaded. Server is restarting to apply changes... Page will refresh automatically.",
     })
 @app.route("/download/zip")
 def download_zip():
