@@ -22,5 +22,5 @@ COPY . .
 # Expose the dashboard port
 EXPOSE 8080
 
-# Run the app
-CMD ["python", "app.py"]
+# Run the app with gunicorn and eventlet for production/AWS
+CMD ["gunicorn", "-k", "eventlet", "-w", "1", "--bind", "0.0.0.0:8080", "app:app"]
