@@ -3,3 +3,5 @@ flask-socketio>=5.3
 paho-mqtt>=2.0
 protobuf>=5.0
 grpcio-tools>=1.60
+gunicorn>=21.0
+eventlet>=0.33.0

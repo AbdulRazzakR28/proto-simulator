@@ -68,8 +68,8 @@ except ImportError:
 # ⚙  CONFIGURATION — Edit these values
 # ===========================================================================
 
-# Internal access password (plain-text; hashed on first use)
-ACCESS_PASSWORD = "decoder2025"
+# Internal access password (loads from environment variable for security on AWS)
+ACCESS_PASSWORD = os.environ.get("ACCESS_PASSWORD", "decoder2025")
 
 # Flask session secret — randomly generated to force re-login on startup
 SECRET_KEY = os.urandom(24).hex()
@@ -590,16 +590,6 @@ def api_proto_upload():
         "topic_count": len(TOPIC_MAP),
         "message": "Proto uploaded. Server is restarting to apply changes... Page will refresh automatically.",
     })
-@app.route("/download/zip")
-def download_zip():
-    """Download the full project archive."""
-    if not is_authenticated():
-        return jsonify({"success": False, "error": "Unauthorized"}), 401
-    
-    directory = os.path.dirname(os.path.abspath(__file__))
-    return send_from_directory(directory, "proto_simulator.zip", as_attachment=True)
-
-
 # ===========================================================================
 # SocketIO events
 # ===========================================================================

@@ -1,9 +1,6 @@
 # 🚀 Simple Operations Installation Guide
 ## MQTT Protobuf Decoder Dashboard
 
-> [!TIP]
-> **Quick Download**: You can download the entire project as a ZIP file here: [**Download Project ZIP**](/download/zip)
-
 ---
 
 This guide is designed for the Operations team. It will help you get the dashboard running on your computer even if you have zero technical or programming experience.
