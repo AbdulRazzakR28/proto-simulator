@@ -1,952 +1,1979 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MQTT Decoder Pro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MQTT Decoder Ultimate</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d0f14;
-  --surface:#13161d;
-  --surface2:#1a1e28;
-  --surface3:#20242f;
-  --border:rgba(255,255,255,0.07);
-  --border2:rgba(255,255,255,0.12);
-  --accent:#00d4a0;
-  --accent2:#00b88a;
-  --accent-dim:rgba(0,212,160,0.10);
-  --accent-glow:rgba(0,212,160,0.20);
-  --text:#e8eaf0;
-  --muted:#6b7280;
-  --muted2:#4b5563;
-  --yellow:#f59e0b;
-  --red:#f87171;
-  --blue:#60a5fa;
-  --purple:#a78bfa;
-  --mono:'JetBrains Mono',monospace;
-  --sans:'Inter',sans-serif;
-}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans)}
+    :root {
+      --bg: #0d0f14;
+      --surface: #13161d;
+      --surface2: #1a1e28;
+      --surface3: #20242f;
+      --border: rgba(255, 255, 255, 0.07);
+      --border2: rgba(255, 255, 255, 0.12);
+      --accent: #00d4a0;
+      --accent2: #00b88a;
+      --accent-dim: rgba(0, 212, 160, 0.10);
+      --accent-glow: rgba(0, 212, 160, 0.20);
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --muted2: #4b5563;
+      --yellow: #f59e0b;
+      --red: #f87171;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+    }
 
-/* ── Layout ─────────────────────────────────────────────── */
-#app{display:grid;grid-template-rows:44px 1fr;height:100vh}
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans)
+    }
 
-/* Topbar */
-#topbar{
-  display:flex;align-items:center;gap:0;
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:0 16px;flex-shrink:0;
-}
-.tb-logo{display:flex;align-items:center;gap:8px;margin-right:20px;flex-shrink:0}
-.tb-logo-icon{width:24px;height:24px;background:var(--accent-dim);border:1px solid rgba(0,212,160,.25);border-radius:5px;display:flex;align-items:center;justify-content:center}
-.tb-logo-icon svg{width:13px;height:13px}
-.tb-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+    /* ── Layout ─────────────────────────────────────────────── */
+    #app {
+      display: grid;
+      grid-template-rows: 44px 1fr;
+      height: 100vh
+    }
 
-.tb-sep{width:1px;height:24px;background:var(--border);margin:0 16px}
+    /* Topbar */
+    #topbar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
 
-.conn-form{display:flex;align-items:center;gap:8px;flex:1}
-.conn-form input{
-  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
-  color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 10px;
-  outline:none;height:28px;
-}
-.conn-form input:focus{border-color:var(--accent)}
-.conn-form input::placeholder{color:var(--muted2)}
-#inp-host{width:160px}
-#inp-port{width:60px}
-#inp-user{width:90px}
-#inp-pass{width:90px}
+    .tb-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 20px;
+      flex-shrink: 0
+    }
 
-.btn-connect{
-  background:var(--accent);color:#0d0f14;border:none;border-radius:5px;
-  font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 14px;
-  cursor:pointer;height:28px;letter-spacing:.04em;white-space:nowrap;
-  transition:opacity .15s;
-}
-.btn-connect:hover{opacity:.85}
-.btn-connect.disconnecting{background:var(--red);color:#fff}
+    .tb-logo-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 212, 160, .25);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
 
-/* Mobile Nav Styles */
-.mobile-back{display:none;background:none;border:none;color:var(--accent);padding:8px 12px 8px 0;cursor:pointer}
-.mobile-back svg{width:16px;height:16px}
+    .tb-logo-icon svg {
+      width: 13px;
+      height: 13px
+    }
 
-.status-pill{
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:11px;color:var(--muted);
-  padding:0 12px;white-space:nowrap;
-}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);flex-shrink:0;transition:background .3s}
-.status-dot.online{background:var(--accent);box-shadow:0 0 6px var(--accent-glow)}
-.status-dot.error{background:var(--red)}
+    .tb-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      white-space: nowrap
+    }
 
-.tb-right{display:flex;align-items:center;gap:8px;margin-left:auto}
-.btn-icon{
-  background:none;border:1px solid var(--border);border-radius:5px;
-  color:var(--muted);cursor:pointer;padding:4px 8px;font-size:11px;font-family:var(--mono);
-  transition:all .15s;height:28px;display:flex;align-items:center;gap:5px;
-}
-.btn-icon:hover{border-color:var(--border2);color:var(--text)}
+    .tb-sep {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      margin: 0 16px
+    }
 
-/* Main body */
-#main{display:grid;grid-template-columns:260px 1fr;overflow:hidden}
+    .conn-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1
+    }
 
-/* ── Left Sidebar ────────────────────────────────────────── */
-#sidebar{
-  background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-}
-.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.stab{
-  flex:1;text-align:center;font-family:var(--mono);font-size:11px;font-weight:500;
-  padding:9px 0;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
-  transition:all .15s;letter-spacing:.04em;text-transform:uppercase;
-}
-.stab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.stab:hover:not(.active){color:var(--text)}
+    .conn-form input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 5px 10px;
+      outline: none;
+      height: 28px;
+    }
 
-.sidebar-search{padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
-.sidebar-search input{
-  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;
-  color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 10px;outline:none;
-}
-.sidebar-search input:focus{border-color:var(--accent)}
-.sidebar-search input::placeholder{color:var(--muted2)}
+    .conn-form input:focus {
+      border-color: var(--accent)
+    }
 
-#topic-list{flex:1;overflow-y:auto;padding:6px 0}
-#topic-list::-webkit-scrollbar{width:4px}
-#topic-list::-webkit-scrollbar-track{background:transparent}
-#topic-list::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px}
+    .conn-form input::placeholder {
+      color: var(--muted2)
+    }
 
-.topic-item{
-  display:flex;align-items:center;gap:0;padding:8px 12px;cursor:pointer;
-  border-left:2px solid transparent;transition:all .12s;
-}
-.topic-item:hover{background:var(--surface2)}
-.topic-item.active{background:var(--accent-dim);border-left-color:var(--accent)}
+    #inp-host {
+      width: 160px
+    }
 
-.topic-icon{width:28px;height:28px;border-radius:6px;background:var(--surface3);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:10px}
-.topic-icon svg{width:13px;height:13px}
+    #inp-port {
+      width: 60px
+    }
 
-.topic-meta{flex:1;min-width:0}
-.topic-name{font-family:var(--mono);font-size:11px;color:var(--text);word-break:break-all;white-space:normal;line-height:1.4}
-.topic-sub{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+    #inp-user {
+      width: 90px
+    }
 
-.topic-badge{
-  background:var(--accent-dim);border:1px solid rgba(0,212,160,.2);
-  border-radius:10px;font-family:var(--mono);font-size:10px;color:var(--accent);
-  padding:2px 7px;flex-shrink:0;min-width:22px;text-align:center;
-}
-.topic-badge.new{background:var(--accent);color:#0d0f14;animation:pulse .5s ease}
+    #inp-pass {
+      width: 90px
+    }
 
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+    .btn-connect {
+      background: var(--accent);
+      color: #0d0f14;
+      border: none;
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 14px;
+      cursor: pointer;
+      height: 28px;
+      letter-spacing: .04em;
+      white-space: nowrap;
+      transition: opacity .15s;
+    }
 
-.sidebar-empty{
-  padding:24px 16px;text-align:center;color:var(--muted);
-  font-family:var(--mono);font-size:11px;line-height:1.6;
-}
+    .btn-connect:hover {
+      opacity: .85
+    }
 
-/* Supported Topics tab */
-#supported-panel{display:none;flex:1;overflow-y:auto;padding:6px 0}
-#supported-panel::-webkit-scrollbar{width:4px}
-#supported-panel::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px}
-.sup-item{padding:8px 12px;border-bottom:1px solid var(--border);cursor:default}
-.sup-pattern{font-family:var(--mono);font-size:10px;color:var(--blue);margin-bottom:3px;word-break:break-all}
-.sup-desc{font-size:10px;color:var(--muted);font-family:var(--sans)}
-.sup-badges{display:flex;gap:4px;margin-top:4px}
-.sup-badge{font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid}
-.sup-badge.qos{color:var(--purple);border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.08)}
-.sup-badge.ret{color:var(--yellow);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08)}
-.sup-badge.type{color:var(--accent);border-color:rgba(0,212,160,.25);background:var(--accent-dim)}
+    .btn-connect.disconnecting {
+      background: var(--red);
+      color: #fff
+    }
 
-/* ── Right Panel ─────────────────────────────────────────── */
-#right-panel{display:grid;grid-template-rows:1fr 300px;overflow:hidden}
+    /* Mobile Nav Styles */
+    .mobile-back {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--accent);
+      padding: 8px 12px 8px 0;
+      cursor: pointer
+    }
 
-/* Message list */
-#msg-list-panel{display:flex;flex-direction:column;overflow:hidden;border-bottom:1px solid var(--border)}
-.panel-header{
-  display:flex;align-items:center;gap:10px;padding:0 16px;height:38px;
-  border-bottom:1px solid var(--border);flex-shrink:0;
-}
-.panel-label{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.panel-label span{color:var(--text);margin-left:4px}
+    .mobile-back svg {
+      width: 16px;
+      height: 16px
+    }
 
-.btn-sm{
-  margin-left:auto;background:none;border:1px solid var(--border);border-radius:4px;
-  color:var(--muted);font-family:var(--mono);font-size:10px;padding:3px 8px;cursor:pointer;
-  transition:all .15s;
-}
-.btn-sm:hover{border-color:var(--border2);color:var(--text)}
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      padding: 0 12px;
+      white-space: nowrap;
+    }
 
-#msg-list{flex:1;overflow-y:auto;padding:0}
-#msg-list::-webkit-scrollbar{width:4px}
-#msg-list::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px}
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted2);
+      flex-shrink: 0;
+      transition: background .3s
+    }
 
-.msg-row{
-  display:grid;grid-template-columns:140px 1fr 80px;
-  padding:9px 16px;border-bottom:1px solid var(--border);
-  cursor:pointer;transition:background .1s;align-items:center;
-}
-.msg-row:hover{background:var(--surface2)}
-.msg-row.selected{background:var(--accent-dim)}
-.msg-ts{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.msg-preview{font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.msg-size{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right}
+    .status-dot.online {
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent-glow)
+    }
 
-.msg-type-badge{
-  display:inline-block;font-family:var(--mono);font-size:9px;
-  padding:1px 6px;border-radius:3px;margin-bottom:3px;
-}
-.type-sensor{background:rgba(0,212,160,.1);color:var(--accent);border:1px solid rgba(0,212,160,.2)}
-.type-cmd{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
-.type-evt{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
-.type-metric{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
-.type-cfg{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
-.type-unknown{background:var(--surface3);color:var(--muted);border:1px solid var(--border)}
+    .status-dot.error {
+      background: var(--red)
+    }
 
-.no-msgs{
-  padding:32px;text-align:center;color:var(--muted);
-  font-family:var(--mono);font-size:12px;line-height:1.8;
-}
+    .tb-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto
+    }
 
-/* ── Detail panel (JSON viewer) ───────────────────────────── */
-#detail-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--surface)}
-.detail-header{
-  display:flex;align-items:center;gap:10px;padding:0 16px;height:38px;
-  border-bottom:1px solid var(--border);flex-shrink:0;
-}
-.detail-tabs{display:flex;gap:0}
-.dtab{
-  font-family:var(--mono);font-size:11px;padding:0 14px;height:38px;
-  display:flex;align-items:center;cursor:pointer;color:var(--muted);
-  border-bottom:2px solid transparent;transition:all .15s;
-}
-.dtab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.dtab:hover:not(.active){color:var(--text)}
+    .btn-icon {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-family: var(--mono);
+      transition: all .15s;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
 
-.copy-btn{
-  margin-left:auto;background:none;border:1px solid var(--border);border-radius:4px;
-  color:var(--muted);font-family:var(--mono);font-size:10px;padding:3px 8px;cursor:pointer;
-  transition:all .15s;display:flex;align-items:center;gap:4px;
-}
-.copy-btn:hover{border-color:var(--border2);color:var(--accent)}
-.copy-btn svg{width:10px;height:10px}
+    .btn-icon:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
 
-#detail-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:var(--mono);font-size:12px}
-#detail-content::-webkit-scrollbar{width:4px}
-#detail-content::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px}
+    /* Main body */
+    #main {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      overflow: hidden
+    }
 
-.detail-empty{color:var(--muted);line-height:1.8;font-size:12px;padding:8px 0}
+    /* ── Left Sidebar ────────────────────────────────────────── */
+    #sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-/* JSON colouring */
-.jk{color:#7dd3fc}       /* key */
-.js{color:#86efac}       /* string */
-.jn{color:#fb923c}       /* number */
-.jb{color:#f472b6}       /* bool */
-.jnull{color:var(--muted)} /* null */
-.jp{color:var(--muted)}  /* punctuation */
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0
+    }
 
-/* Meta info row */
-.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.meta-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px}
-.meta-label{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
-.meta-value{font-size:12px;color:var(--text);word-break:break-all}
+    .stab {
+      flex: 1;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 9px 0;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .15s;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
 
-/* Manual decode panel */
-#manual-panel{
-  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;
-  display:none;align-items:center;justify-content:center;
-}
-#manual-panel.open{display:flex}
-.manual-card{
-  background:var(--surface);border:1px solid var(--border2);border-radius:10px;
-  width:520px;padding:24px;
-}
-.manual-card h2{font-size:15px;font-weight:500;margin-bottom:16px;color:var(--text)}
-.manual-card label{font-family:var(--mono);font-size:11px;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
-.manual-card input,.manual-card textarea{
-  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;
-  color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px;outline:none;margin-bottom:12px;
-}
-.manual-card input:focus,.manual-card textarea:focus{border-color:var(--accent)}
-.manual-card textarea{height:80px;resize:vertical}
-.manual-card input::placeholder,.manual-card textarea::placeholder{color:var(--muted2)}
-.manual-btns{display:flex;gap:8px;justify-content:flex-end}
-.manual-btns button{
-  font-family:var(--mono);font-size:12px;padding:8px 18px;border-radius:5px;cursor:pointer;
-}
-.btn-cancel{background:none;border:1px solid var(--border);color:var(--muted)}
-.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
-.btn-run{background:var(--accent);border:none;color:#0d0f14;font-weight:600}
-.btn-run:hover{opacity:.85}
+    .stab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent)
+    }
 
-/* ── UI Toggles & Extra Buttons ─────────────────────────── */
-.toggle-group{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:2px 4px;margin-right:8px}
-.toggle-btn{
-  background:none;border:none;border-radius:10px;color:var(--muted);
-  font-family:var(--mono);font-size:9px;padding:3px 8px;cursor:pointer;
-  transition:all .15s;text-transform:uppercase;letter-spacing:.03em;
-}
-.toggle-btn.active{background:var(--accent);color:#0d0f14;font-weight:600}
+    .stab:hover:not(.active) {
+      color: var(--text)
+    }
 
-.panel-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
-.btn-export{
-  background:none;border:1px solid var(--blue);border-radius:4px;
-  color:var(--blue);font-family:var(--mono);font-size:10px;padding:3px 8px;cursor:pointer;
-  transition:all .15s;display:flex;align-items:center;gap:4px;
-}
-.btn-export:hover{background:rgba(96,165,250,.1)}
-.btn-export svg{width:10px;height:10px}
+    .sidebar-search {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0
+    }
 
-.sidebar-search{display:flex;flex-direction:column;gap:8px}
-.search-mode-row{display:flex;align-items:center;justify-content:space-between}
-.search-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+    .sidebar-search input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      outline: none;
+    }
 
-/* ── Mobile Responsiveness ────────────────────────────────── */
-@media (max-width:850px){
-  #topbar{height:auto;flex-wrap:wrap;padding:10px 16px;gap:12px}
-  .tb-logo{margin-right:auto}
-  .conn-form{flex-basis:100%;order:3;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:4px}
-  .conn-form input{width:100% !important;height:32px}
-  .btn-connect{height:32px;grid-column:span 2}
-  .tb-right{order:2;margin-left:0}
-  .tb-sep{display:none}
+    .sidebar-search input:focus {
+      border-color: var(--accent)
+    }
 
-  #main{grid-template-columns:1fr;height:calc(100vh - 120px);position:relative}
-  #sidebar{position:absolute;inset:0;z-index:10;background:var(--bg)}
-  #right-panel{position:absolute;inset:0;z-index:20;background:var(--bg);grid-template-rows:1fr 0px;transition:grid-template-rows .3s}
-  #right-panel.show-details{grid-template-rows:0px 1fr}
-  
-  .mobile-back{display:flex;align-items:center}
-  
-  /* Pane Visibility */
-  body.view-topics #sidebar{display:flex}
-  body.view-topics #right-panel{display:none}
-  
-  body.view-messages #sidebar{display:none}
-  body.view-messages #right-panel{display:grid}
-  body.view-messages #msg-list-panel{height:100%}
-  body.view-messages #detail-panel{display:none}
-  
-  body.view-details #sidebar{display:none}
-  body.view-details #right-panel{display:grid;grid-template-rows:0 1fr}
-  body.view-details #msg-list-panel{display:none}
-  body.view-details #detail-panel{display:flex;height:100%}
+    .sidebar-search input::placeholder {
+      color: var(--muted2)
+    }
 
-  .meta-grid{grid-template-columns:1fr}
-  .msg-row{grid-template-columns:100px 1fr 60px;padding:12px 16px}
-  .msg-ts{font-size:9px}
-  .msg-preview{font-size:10px}
-  .panel-header{height:44px;padding:0 12px}
-  .panel-label{font-size:10px}
-  .toggle-group{gap:2px;padding:2px}
-  .toggle-btn{padding:3px 6px;font-size:8px}
-  .btn-export{padding:3px 6px}
-  .btn-sm{padding:3px 6px}
-  
-  .manual-card,.proto-card{width:92%;padding:20px}
-}
+    #topic-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0
+    }
 
-/* ── Proto Upload Panel ──────────────────────────────────── */
-#proto-panel{
-  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;
-  display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);
-}
-#proto-panel.open{display:flex}
-.proto-card{
-  background:var(--surface);border:1px solid var(--border2);border-radius:12px;
-  width:480px;padding:28px;animation:fadeUp .2s ease;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.proto-card h2{
-  font-size:14px;font-weight:600;margin-bottom:4px;color:var(--text);
-  display:flex;align-items:center;gap:8px;
-}
-.proto-card h2 svg{opacity:.6}
-.proto-sub{font-size:11px;color:var(--muted);margin-bottom:20px;font-family:var(--mono)}
+    #topic-list::-webkit-scrollbar {
+      width: 4px
+    }
 
-.proto-drop{
-  border:2px dashed var(--border2);border-radius:8px;
-  padding:32px 20px;text-align:center;cursor:pointer;
-  transition:all .2s;position:relative;
-  background:var(--surface2);
-}
-.proto-drop.drag-over{border-color:var(--accent);background:var(--accent-dim)}
-.proto-drop input[type=file]{
-  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
-}
-.proto-drop-icon{margin-bottom:10px;opacity:.5}
-.proto-drop-text{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.proto-drop-text strong{color:var(--accent)}
-.proto-file-chosen{
-  display:none;align-items:center;gap:10px;margin-top:14px;
-  background:var(--surface3);border:1px solid var(--border);border-radius:6px;
-  padding:10px 14px;
-}
-.proto-file-chosen.visible{display:flex}
-.proto-file-icon{color:var(--blue);font-size:14px}
-.proto-file-name{font-family:var(--mono);font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.proto-file-size{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.proto-file-remove{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;font-size:14px;line-height:1}
-.proto-file-remove:hover{color:var(--red)}
+    #topic-list::-webkit-scrollbar-track {
+      background: transparent
+    }
 
-.proto-error{
-  display:none;margin-top:12px;padding:10px 14px;
-  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);
-  border-radius:6px;font-family:var(--mono);font-size:11px;color:var(--red);white-space:pre-wrap;
-}
-.proto-error.visible{display:block}
+    #topic-list::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 2px
+    }
 
-.proto-success{
-  display:none;margin-top:12px;padding:10px 14px;
-  background:var(--accent-dim);border:1px solid rgba(0,212,160,.3);
-  border-radius:6px;font-family:var(--mono);font-size:11px;color:var(--accent);
-}
-.proto-success.visible{display:block}
+    .topic-item {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all .12s;
+    }
 
-.proto-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-.proto-actions button{font-family:var(--mono);font-size:12px;padding:8px 18px;border-radius:5px;cursor:pointer;transition:all .15s}
+    .topic-item:hover {
+      background: var(--surface2)
+    }
 
-.proto-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);
-  border-radius:10px;padding:2px 8px;
-  font-family:var(--mono);font-size:10px;color:var(--blue);
-}
-.proto-badge.uploading{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25);color:var(--yellow)}
-.proto-badge.success{background:var(--accent-dim);border-color:rgba(0,212,160,.3);color:var(--accent)}
-</style>
+    .topic-item.active {
+      background: var(--accent-dim);
+      border-left-color: var(--accent)
+    }
+
+    .topic-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--surface3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-right: 10px
+    }
+
+    .topic-icon svg {
+      width: 13px;
+      height: 13px
+    }
+
+    .topic-meta {
+      flex: 1;
+      min-width: 0
+    }
+
+    .topic-name {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      word-break: break-all;
+      white-space: normal;
+      line-height: 1.4
+    }
+
+    .topic-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-family: var(--mono)
+    }
+
+    .topic-badge {
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 212, 160, .2);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent);
+      padding: 2px 7px;
+      flex-shrink: 0;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .topic-badge.new {
+      background: var(--accent);
+      color: #0d0f14;
+      animation: pulse .5s ease
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.25)
+      }
+
+      100% {
+        transform: scale(1)
+      }
+    }
+
+    .sidebar-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* Supported Topics tab */
+    #supported-panel {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0
+    }
+
+    #supported-panel::-webkit-scrollbar {
+      width: 4px
+    }
+
+    #supported-panel::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 2px
+    }
+
+    .sup-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: default
+    }
+
+    .sup-pattern {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--blue);
+      margin-bottom: 3px;
+      word-break: break-all
+    }
+
+    .sup-desc {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--sans)
+    }
+
+    .sup-badges {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px
+    }
+
+    .sup-badge {
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid
+    }
+
+    .sup-badge.qos {
+      color: var(--purple);
+      border-color: rgba(167, 139, 250, .3);
+      background: rgba(167, 139, 250, .08)
+    }
+
+    .sup-badge.ret {
+      color: var(--yellow);
+      border-color: rgba(245, 158, 11, .3);
+      background: rgba(245, 158, 11, .08)
+    }
+
+    .sup-badge.type {
+      color: var(--accent);
+      border-color: rgba(0, 212, 160, .25);
+      background: var(--accent-dim)
+    }
+
+    /* ── Right Panel ─────────────────────────────────────────── */
+    #right-panel {
+      display: grid;
+      grid-template-rows: 1fr 300px;
+      overflow: hidden
+    }
+
+    /* Message list */
+    #msg-list-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      height: 38px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em
+    }
+
+    .panel-label span {
+      color: var(--text);
+      margin-left: 4px
+    }
+
+    .btn-sm {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-sm:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    #msg-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0
+    }
+
+    #msg-list::-webkit-scrollbar {
+      width: 4px
+    }
+
+    #msg-list::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 2px
+    }
+
+    .msg-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 80px;
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .1s;
+      align-items: center;
+    }
+
+    .msg-row:hover {
+      background: var(--surface2)
+    }
+
+    .msg-row.selected {
+      background: var(--accent-dim)
+    }
+
+    .msg-ts {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .msg-preview {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .msg-size {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-align: right
+    }
+
+    .msg-type-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-bottom: 3px;
+    }
+
+    .type-sensor {
+      background: rgba(0, 212, 160, .1);
+      color: var(--accent);
+      border: 1px solid rgba(0, 212, 160, .2)
+    }
+
+    .type-cmd {
+      background: rgba(96, 165, 250, .1);
+      color: var(--blue);
+      border: 1px solid rgba(96, 165, 250, .2)
+    }
+
+    .type-evt {
+      background: rgba(245, 158, 11, .1);
+      color: var(--yellow);
+      border: 1px solid rgba(245, 158, 11, .2)
+    }
+
+    .type-metric {
+      background: rgba(167, 139, 250, .1);
+      color: var(--purple);
+      border: 1px solid rgba(167, 139, 250, .2)
+    }
+
+    .type-cfg {
+      background: rgba(248, 113, 113, .1);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, .2)
+    }
+
+    .type-unknown {
+      background: var(--surface3);
+      color: var(--muted);
+      border: 1px solid var(--border)
+    }
+
+    .no-msgs {
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    /* ── Detail panel (JSON viewer) ───────────────────────────── */
+    #detail-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--surface)
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      height: 38px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .detail-tabs {
+      display: flex;
+      gap: 0
+    }
+
+    .dtab {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 0 14px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: all .15s;
+    }
+
+    .dtab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent)
+    }
+
+    .dtab:hover:not(.active) {
+      color: var(--text)
+    }
+
+    .copy-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--border2);
+      color: var(--accent)
+    }
+
+    .copy-btn svg {
+      width: 10px;
+      height: 10px
+    }
+
+    #detail-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 12px
+    }
+
+    #detail-content::-webkit-scrollbar {
+      width: 4px
+    }
+
+    #detail-content::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 2px
+    }
+
+    .detail-empty {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 12px;
+      padding: 8px 0
+    }
+
+    /* JSON colouring */
+    .jk {
+      color: #7dd3fc
+    }
+
+    /* key */
+    .js {
+      color: #86efac
+    }
+
+    /* string */
+    .jn {
+      color: #fb923c
+    }
+
+    /* number */
+    .jb {
+      color: #f472b6
+    }
+
+    /* bool */
+    .jnull {
+      color: var(--muted)
+    }
+
+    /* null */
+    .jp {
+      color: var(--muted)
+    }
+
+    /* punctuation */
+
+    /* Meta info row */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    .meta-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px
+    }
+
+    .meta-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: .05em
+    }
+
+    .meta-value {
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all
+    }
+
+    /* Manual decode panel */
+    #manual-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #manual-panel.open {
+      display: flex
+    }
+
+    .manual-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      width: 520px;
+      padding: 24px;
+    }
+
+    .manual-card h2 {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: var(--text)
+    }
+
+    .manual-card label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .05em
+    }
+
+    .manual-card input,
+    .manual-card textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 8px 12px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .manual-card input:focus,
+    .manual-card textarea:focus {
+      border-color: var(--accent)
+    }
+
+    .manual-card textarea {
+      height: 80px;
+      resize: vertical
+    }
+
+    .manual-card input::placeholder,
+    .manual-card textarea::placeholder {
+      color: var(--muted2)
+    }
+
+    .manual-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end
+    }
+
+    .manual-btns button {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-cancel {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted)
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .btn-run {
+      background: var(--accent);
+      border: none;
+      color: #0d0f14;
+      font-weight: 600
+    }
+
+    .btn-run:hover {
+      opacity: .85
+    }
+
+    /* ── UI Toggles & Extra Buttons ─────────────────────────── */
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2px 4px;
+      margin-right: 8px
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all .15s;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #0d0f14;
+      font-weight: 600
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto
+    }
+
+    .btn-export {
+      background: none;
+      border: 1px solid var(--blue);
+      border-radius: 4px;
+      color: var(--blue);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-export:hover {
+      background: rgba(96, 165, 250, .1)
+    }
+
+    .btn-export svg {
+      width: 10px;
+      height: 10px
+    }
+
+    .sidebar-search {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .search-mode-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .search-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em
+    }
+
+    /* ── Mobile Responsiveness ────────────────────────────────── */
+    @media (max-width:850px) {
+      #topbar {
+        height: auto;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        gap: 12px
+      }
+
+      .tb-logo {
+        margin-right: auto
+      }
+
+      .conn-form {
+        flex-basis: 100%;
+        order: 3;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding-top: 4px
+      }
+
+      .conn-form input {
+        width: 100% !important;
+        height: 32px
+      }
+
+      .btn-connect {
+        height: 32px;
+        grid-column: span 2
+      }
+
+      .tb-right {
+        order: 2;
+        margin-left: 0
+      }
+
+      .tb-sep {
+        display: none
+      }
+
+      #main {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 120px);
+        position: relative
+      }
+
+      #sidebar {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        background: var(--bg)
+      }
+
+      #right-panel {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        background: var(--bg);
+        grid-template-rows: 1fr 0px;
+        transition: grid-template-rows .3s
+      }
+
+      #right-panel.show-details {
+        grid-template-rows: 0px 1fr
+      }
+
+      .mobile-back {
+        display: flex;
+        align-items: center
+      }
+
+      /* Pane Visibility */
+      body.view-topics #sidebar {
+        display: flex
+      }
+
+      body.view-topics #right-panel {
+        display: none
+      }
+
+      body.view-messages #sidebar {
+        display: none
+      }
+
+      body.view-messages #right-panel {
+        display: grid
+      }
+
+      body.view-messages #msg-list-panel {
+        height: 100%
+      }
+
+      body.view-messages #detail-panel {
+        display: none
+      }
+
+      body.view-details #sidebar {
+        display: none
+      }
+
+      body.view-details #right-panel {
+        display: grid;
+        grid-template-rows: 0 1fr
+      }
+
+      body.view-details #msg-list-panel {
+        display: none
+      }
+
+      body.view-details #detail-panel {
+        display: flex;
+        height: 100%
+      }
+
+      .meta-grid {
+        grid-template-columns: 1fr
+      }
+
+      .msg-row {
+        grid-template-columns: 100px 1fr 60px;
+        padding: 12px 16px
+      }
+
+      .msg-ts {
+        font-size: 9px
+      }
+
+      .msg-preview {
+        font-size: 10px
+      }
+
+      .panel-header {
+        height: 44px;
+        padding: 0 12px
+      }
+
+      .panel-label {
+        font-size: 10px
+      }
+
+      .toggle-group {
+        gap: 2px;
+        padding: 2px
+      }
+
+      .toggle-btn {
+        padding: 3px 6px;
+        font-size: 8px
+      }
+
+      .btn-export {
+        padding: 3px 6px
+      }
+
+      .btn-sm {
+        padding: 3px 6px
+      }
+
+      .manual-card,
+      .proto-card {
+        width: 92%;
+        padding: 20px
+      }
+    }
+
+    /* ── Proto Upload Panel ──────────────────────────────────── */
+    #proto-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .65);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    #proto-panel.open {
+      display: flex
+    }
+
+    .proto-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      width: 480px;
+      padding: 28px;
+      animation: fadeUp .2s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .proto-card h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .proto-card h2 svg {
+      opacity: .6
+    }
+
+    .proto-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      font-family: var(--mono)
+    }
+
+    .proto-drop {
+      border: 2px dashed var(--border2);
+      border-radius: 8px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      background: var(--surface2);
+    }
+
+    .proto-drop.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-dim)
+    }
+
+    .proto-drop input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .proto-drop-icon {
+      margin-bottom: 10px;
+      opacity: .5
+    }
+
+    .proto-drop-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .proto-drop-text strong {
+      color: var(--accent)
+    }
+
+    .proto-file-chosen {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+
+    .proto-file-chosen.visible {
+      display: flex
+    }
+
+    .proto-file-icon {
+      color: var(--blue);
+      font-size: 14px
+    }
+
+    .proto-file-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .proto-file-size {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .proto-file-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px;
+      font-size: 14px;
+      line-height: 1
+    }
+
+    .proto-file-remove:hover {
+      color: var(--red)
+    }
+
+    .proto-error {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(248, 113, 113, .08);
+      border: 1px solid rgba(248, 113, 113, .25);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--red);
+      white-space: pre-wrap;
+    }
+
+    .proto-error.visible {
+      display: block
+    }
+
+    .proto-success {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 212, 160, .3);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    .proto-success.visible {
+      display: block
+    }
+
+    .proto-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px
+    }
+
+    .proto-actions button {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 8px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .proto-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(96, 165, 250, .1);
+      border: 1px solid rgba(96, 165, 250, .25);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--blue);
+    }
+
+    .proto-badge.uploading {
+      background: rgba(245, 158, 11, .1);
+      border-color: rgba(245, 158, 11, .25);
+      color: var(--yellow)
+    }
+
+    .proto-badge.success {
+      background: var(--accent-dim);
+      border-color: rgba(0, 212, 160, .3);
+      color: var(--accent)
+    }
+  </style>
 </head>
+
 <body>
-<div id="app">
+  <div id="app">
 
-  <!-- ── Top Bar ───────────────────────────────────────────── -->
-  <div id="topbar">
-    <div class="tb-logo">
-      <div class="tb-logo-icon">
-        <svg viewBox="0 0 18 18" fill="none"><path d="M2 5h14M2 9h10M2 13h7" stroke="#00d4a0" stroke-width="1.5" stroke-linecap="round"/><circle cx="14" cy="13" r="2.5" stroke="#00d4a0" stroke-width="1.5"/><path d="M14 10.5V7" stroke="#00d4a0" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-      <div class="tb-title">MQTT Decoder Pro</div>
-    </div>
-
-    <div class="tb-sep"></div>
-
-    <div class="conn-form">
-      <select id="broker-select" onchange="applyBrokerPreset()" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:11px;padding:4px 8px;outline:none;height:28px;cursor:pointer">
-        <option value="custom">Custom</option>
-        <option value="sitlng" selected>Sitlng Broker</option>
-        <option value="prod">Production Server</option>
-        <option value="local">Localhost</option>
-      </select>
-      <input id="inp-host" placeholder="broker host" value="sitlng.edge.solx.sg-lab.safevue.ai" />
-      <input id="inp-port" placeholder="port" value="1883" />
-      <input id="inp-user" placeholder="username" value="admin" />
-      <input id="inp-pass" type="password" placeholder="password" value="magellanx" />
-      <label style="color:var(--muted);font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;">
-        <input type="checkbox" id="inp-tls" checked style="accent-color:var(--accent);"> SSL
-      </label>
-      <button class="btn-connect" id="connectBtn" onclick="toggleConnect()">Connect</button>
-    </div>
-
-    <div class="status-pill">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">Not connected</span>
-    </div>
-
-    <div class="tb-sep"></div>
-
-    <div class="tb-right">
-      <div id="proto-badge" class="proto-badge" title="Currently loaded proto">
-        <svg width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M2 3h10v8a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" stroke="currentColor" stroke-width="1.2"/><path d="M5 3V1h4v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <span id="proto-topic-count">— topics</span>
-      </div>
-      <button class="btn-icon" onclick="openProto()" id="protoBtn">
-        <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 10V4l5-3 5 3v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="4.5" y="7" width="5" height="7" rx=".5" stroke="currentColor" stroke-width="1.2"/></svg>
-        Upload Proto
-      </button>
-      <button class="btn-icon" onclick="openManual()">
-        <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Manual decode
-      </button>
-      <button class="btn-icon" onclick="window.location='/logout'">
-        <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M9 2h3v10H9M5 9l3-2-3-2M2 7h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Logout
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Main ─────────────────────────────────────────────── -->
-  <div id="main">
-
-    <!-- Sidebar -->
-    <div id="sidebar">
-      <div class="sidebar-tabs">
-        <div class="stab active" id="tab-live" onclick="switchTab('live')">Live Topics</div>
-        <div class="stab" id="tab-sup" onclick="switchTab('sup')">Supported</div>
-      </div>
-
-      <div class="sidebar-search">
-        <div class="search-mode-row">
-          <div class="search-label">Search Mode</div>
-          <div class="toggle-group" style="margin-right:0">
-            <button class="toggle-btn active" id="sm-topic" onclick="setSearchMode('topic')">Topic</button>
-            <button class="toggle-btn" id="sm-payload" onclick="setSearchMode('payload')">Payload</button>
-          </div>
+    <!-- ── Top Bar ───────────────────────────────────────────── -->
+    <div id="topbar">
+      <div class="tb-logo">
+        <div class="tb-logo-icon">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M2 5h14M2 9h10M2 13h7" stroke="#00d4a0" stroke-width="1.5" stroke-linecap="round" />
+            <circle cx="14" cy="13" r="2.5" stroke="#00d4a0" stroke-width="1.5" />
+            <path d="M14 10.5V7" stroke="#00d4a0" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
         </div>
-        <input id="topicSearch" placeholder="Filter topics…" oninput="filterTopics(this.value)" />
+        <div class="tb-title">MQTT Decoder Pro</div>
       </div>
 
-      <div id="topic-list">
-        <div class="sidebar-empty" id="liveEmpty">No messages yet.<br>Connect to your broker to start.</div>
+      <div class="tb-sep"></div>
+
+      <div class="conn-form">
+        <select id="broker-select" onchange="applyBrokerPreset()"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:11px;padding:4px 8px;outline:none;height:28px;cursor:pointer">
+          <option value="custom">Custom</option>
+          <option value="sitlng" selected>Sitlng Broker</option>
+          <option value="prod">Production Server</option>
+          <option value="local">Localhost</option>
+        </select>
+        <input id="inp-host" placeholder="broker host" value="sitlng.edge.solx.sg-lab.safevue.ai" />
+        <input id="inp-port" placeholder="port" value="1883" />
+        <input id="inp-user" placeholder="username" value="admin" />
+        <input id="inp-pass" type="password" placeholder="password" value="magellanx" />
+        <label
+          style="color:var(--muted);font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+          <input type="checkbox" id="inp-tls" checked style="accent-color:var(--accent);"> SSL
+        </label>
+        <button class="btn-connect" id="connectBtn" onclick="toggleConnect()">Connect</button>
       </div>
 
-      <div id="supported-panel"></div>
+      <div class="status-pill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Not connected</span>
+      </div>
+
+      <div class="tb-sep"></div>
+
+      <div class="tb-right">
+        <div id="proto-badge" class="proto-badge" title="Currently loaded proto">
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+            <path d="M2 3h10v8a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" stroke="currentColor" stroke-width="1.2" />
+            <path d="M5 3V1h4v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+          <span id="proto-topic-count">— topics</span>
+        </div>
+        <button class="btn-icon" onclick="openProto()" id="protoBtn">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+            <path d="M2 10V4l5-3 5 3v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <rect x="4.5" y="7" width="5" height="7" rx=".5" stroke="currentColor" stroke-width="1.2" />
+          </svg>
+          Upload Proto
+        </button>
+        <button class="btn-icon" onclick="openManual()">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          Manual decode
+        </button>
+        <button class="btn-icon" onclick="window.location='/logout'">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+            <path d="M9 2h3v10H9M5 9l3-2-3-2M2 7h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          Logout
+        </button>
+      </div>
     </div>
 
-    <!-- Right -->
-    <div id="right-panel">
+    <!-- ── Main ─────────────────────────────────────────────── -->
+    <div id="main">
 
-      <!-- Message list -->
-      <div id="msg-list-panel">
-        <div class="panel-header">
-          <button class="mobile-back" onclick="setView('topics')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          </button>
-          <span class="panel-label">Messages <span id="topicTitle">— select a topic</span></span>
-          <div class="panel-actions">
-            <div class="toggle-group" title="Auto-scroll message list">
-              <button class="toggle-btn active" id="btn-scroll-on" onclick="setAutoScroll(true)">Auto-scroll</button>
-              <button class="toggle-btn" id="btn-scroll-off" onclick="setAutoScroll(false)">Pause</button>
+      <!-- Sidebar -->
+      <div id="sidebar">
+        <div class="sidebar-tabs">
+          <div class="stab active" id="tab-live" onclick="switchTab('live')">Live Topics</div>
+          <div class="stab" id="tab-sup" onclick="switchTab('sup')">Supported</div>
+        </div>
+
+        <div class="sidebar-search">
+          <div class="search-mode-row">
+            <div class="search-label">Search Mode</div>
+            <div class="toggle-group" style="margin-right:0">
+              <button class="toggle-btn active" id="sm-topic" onclick="setSearchMode('topic')">Topic</button>
+              <button class="toggle-btn" id="sm-payload" onclick="setSearchMode('payload')">Payload</button>
             </div>
-            <button class="btn-export" onclick="exportHistory()" title="Export current topic history to JSON">
-              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor"><path d="M7 2v10M7 12l-4-4M7 12l4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Export
+          </div>
+          <input id="topicSearch" placeholder="Filter topics…" oninput="filterTopics(this.value)" />
+        </div>
+
+        <div id="topic-list">
+          <div class="sidebar-empty" id="liveEmpty">No messages yet.<br>Connect to your broker to start.</div>
+        </div>
+
+        <div id="supported-panel"></div>
+      </div>
+
+      <!-- Right -->
+      <div id="right-panel">
+
+        <!-- Message list -->
+        <div id="msg-list-panel">
+          <div class="panel-header">
+            <button class="mobile-back" onclick="setView('topics')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
             </button>
-            <button class="btn-sm" onclick="clearMessages()">Clear</button>
+            <span class="panel-label">Messages <span id="topicTitle">— select a topic</span></span>
+            <div class="panel-actions">
+              <div class="toggle-group" title="Auto-scroll message list">
+                <button class="toggle-btn active" id="btn-scroll-on" onclick="setAutoScroll(true)">Auto-scroll</button>
+                <button class="toggle-btn" id="btn-scroll-off" onclick="setAutoScroll(false)">Pause</button>
+              </div>
+              <button class="btn-export" onclick="exportHistory()" title="Export current topic history to JSON">
+                <svg viewBox="0 0 14 14" fill="none" stroke="currentColor">
+                  <path d="M7 2v10M7 12l-4-4M7 12l4-4" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                Export
+              </button>
+              <button class="btn-sm" onclick="clearMessages()">Clear</button>
+            </div>
+          </div>
+          <div id="msg-list">
+            <div class="no-msgs" id="msgEmpty">Select a topic from the sidebar to view messages.</div>
           </div>
         </div>
-        <div id="msg-list">
-          <div class="no-msgs" id="msgEmpty">Select a topic from the sidebar to view messages.</div>
-        </div>
-      </div>
 
-      <!-- Detail / JSON viewer -->
-      <div id="detail-panel">
-        <div class="detail-header">
-          <button class="mobile-back" onclick="setView('messages')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          </button>
-          <div class="detail-tabs">
-            <div class="dtab active" id="dtab-decoded" onclick="switchDtab('decoded')">Decoded</div>
-            <div class="dtab" id="dtab-raw" onclick="switchDtab('raw')">Raw B64</div>
-            <div class="dtab" id="dtab-meta" onclick="switchDtab('meta')">Info</div>
+        <!-- Detail / JSON viewer -->
+        <div id="detail-panel">
+          <div class="detail-header">
+            <button class="mobile-back" onclick="setView('messages')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <div class="detail-tabs">
+              <div class="dtab active" id="dtab-decoded" onclick="switchDtab('decoded')">Decoded</div>
+              <div class="dtab" id="dtab-raw" onclick="switchDtab('raw')">Raw B64</div>
+              <div class="dtab" id="dtab-meta" onclick="switchDtab('meta')">Info</div>
+            </div>
+            <button class="copy-btn" onclick="copyDetail()">
+              <svg viewBox="0 0 12 12" fill="none">
+                <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2" />
+                <path d="M1 8V1h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              Copy
+            </button>
           </div>
-          <button class="copy-btn" onclick="copyDetail()">
-            <svg viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1 8V1h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Copy
-          </button>
+          <div id="detail-content">
+            <div class="detail-empty">Click a message to inspect its decoded payload.</div>
+          </div>
         </div>
-        <div id="detail-content">
-          <div class="detail-empty">Click a message to inspect its decoded payload.</div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Proto Upload Modal -->
+  <div id="proto-panel">
+    <div class="proto-card">
+      <h2>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 12V5l6-3 6 3v7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+          <rect x="5" y="8" width="6" height="8" rx=".6" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+        Upload Protobuf Schema
+      </h2>
+      <div class="proto-sub">Drop a .proto file to replace the active decoder schema. The server will compile and
+        hot-reload instantly.</div>
+
+      <div class="proto-drop" id="protoDrop">
+        <input type="file" id="protoFileInput" accept=".proto" onchange="onProtoFileChosen(this)" />
+        <div class="proto-drop-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <rect x="4" y="4" width="28" height="28" rx="4" stroke="currentColor" stroke-width="1.5" opacity=".3" />
+            <path d="M12 18h12M18 12v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="proto-drop-text">Drop your <strong>.proto</strong> file here or <strong>click to browse</strong>
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
-
-<!-- Proto Upload Modal -->
-<div id="proto-panel">
-  <div class="proto-card">
-    <h2>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V5l6-3 6 3v7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="5" y="8" width="6" height="8" rx=".6" stroke="currentColor" stroke-width="1.2"/></svg>
-      Upload Protobuf Schema
-    </h2>
-    <div class="proto-sub">Drop a .proto file to replace the active decoder schema. The server will compile and hot-reload instantly.</div>
-
-    <div class="proto-drop" id="protoDrop">
-      <input type="file" id="protoFileInput" accept=".proto" onchange="onProtoFileChosen(this)" />
-      <div class="proto-drop-icon">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="4" stroke="currentColor" stroke-width="1.5" opacity=".3"/><path d="M12 18h12M18 12v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <div class="proto-file-chosen" id="protoFileChosen">
+        <span class="proto-file-icon">📄</span>
+        <span class="proto-file-name" id="protoFileName"></span>
+        <span class="proto-file-size" id="protoFileSize"></span>
+        <button class="proto-file-remove" onclick="clearProtoFile()" title="Remove">✕</button>
       </div>
-      <div class="proto-drop-text">Drop your <strong>.proto</strong> file here or <strong>click to browse</strong></div>
-    </div>
 
-    <div class="proto-file-chosen" id="protoFileChosen">
-      <span class="proto-file-icon">📄</span>
-      <span class="proto-file-name" id="protoFileName"></span>
-      <span class="proto-file-size" id="protoFileSize"></span>
-      <button class="proto-file-remove" onclick="clearProtoFile()" title="Remove">✕</button>
-    </div>
+      <div class="proto-error" id="protoError"></div>
+      <div class="proto-success" id="protoSuccess"></div>
 
-    <div class="proto-error" id="protoError"></div>
-    <div class="proto-success" id="protoSuccess"></div>
-
-    <div class="proto-actions">
-      <button class="btn-cancel" onclick="closeProto()">Cancel</button>
-      <button class="btn-run" id="protoUploadBtn" onclick="uploadProto()" disabled style="opacity:.5;cursor:not-allowed">Upload &amp; Reload</button>
+      <div class="proto-actions">
+        <button class="btn-cancel" onclick="closeProto()">Cancel</button>
+        <button class="btn-run" id="protoUploadBtn" onclick="uploadProto()" disabled
+          style="opacity:.5;cursor:not-allowed">Upload &amp; Reload</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Manual decode modal -->
-<div id="manual-panel">
-  <div class="manual-card">
-    <h2>Manual decode</h2>
-    <label>MQTT Topic</label>
-    <input id="m-topic" placeholder="dt/watch01/sensor/heartrate" />
-    <label>Payload (Base64)</label>
-    <textarea id="m-payload" placeholder="CKmz…"></textarea>
-    <div id="m-result" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:10px;margin-bottom:12px;font-size:11px;max-height:200px;overflow-y:auto"></div>
-    <div class="manual-btns">
-      <button class="btn-cancel" onclick="closeManual()">Cancel</button>
-      <button class="btn-run" onclick="runManual()">Decode</button>
+  <!-- Manual decode modal -->
+  <div id="manual-panel">
+    <div class="manual-card">
+      <h2>Manual decode</h2>
+      <label>MQTT Topic</label>
+      <input id="m-topic" placeholder="dt/watch01/sensor/heartrate" />
+      <label>Payload (Base64)</label>
+      <textarea id="m-payload" placeholder="CKmz…"></textarea>
+      <div id="m-result"
+        style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:10px;margin-bottom:12px;font-size:11px;max-height:200px;overflow-y:auto">
+      </div>
+      <div class="manual-btns">
+        <button class="btn-cancel" onclick="closeManual()">Cancel</button>
+        <button class="btn-run" onclick="runManual()">Decode</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-// ── State ──────────────────────────────────────────────────────────────────
-const state = {
-  topics: {},          // { topic: [msg, ...] }
-  activeTopic: null,
-  selectedMsg: null,
-  activeTab: 'live',   // live | sup
-  dtab: 'decoded',     // decoded | raw | meta
-  connected: false,
-  proto: { filename: null, topicCount: 0 },
-  autoScroll: true,
-  searchMode: 'topic', // topic | payload
-  view: 'topics',      // topics | messages | details (mobile only)
-  isRestarting: false, // track if we are waiting for a server reboot
-};
+  <script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    const state = {
+      topics: {},          // { topic: [msg, ...] }
+      activeTopic: null,
+      selectedMsg: null,
+      activeTab: 'live',   // live | sup
+      dtab: 'decoded',     // decoded | raw | meta
+      connected: false,
+      proto: { filename: null, topicCount: 0 },
+      autoScroll: true,
+      searchMode: 'topic', // topic | payload
+      view: 'topics',      // topics | messages | details (mobile only)
+      isRestarting: false, // track if we are waiting for a server reboot
+    };
 
-function applyBrokerPreset() {
-  const sel = document.getElementById('broker-select').value;
-  const host = document.getElementById('inp-host');
-  const port = document.getElementById('inp-port');
-  const user = document.getElementById('inp-user');
-  const pass = document.getElementById('inp-pass');
-  const tls = document.getElementById('inp-tls');
-  
-  port.value = '1883'; // Requested constant port
+    function applyBrokerPreset() {
+      const sel = document.getElementById('broker-select').value;
+      const host = document.getElementById('inp-host');
+      const port = document.getElementById('inp-port');
+      const user = document.getElementById('inp-user');
+      const pass = document.getElementById('inp-pass');
+      const tls = document.getElementById('inp-tls');
 
-  if (sel === 'sitlng') {
-    host.value = 'sitlng.edge.solx.sg-lab.safevue.ai';
-    user.value = 'admin'; pass.value = 'magellanx'; tls.checked = true;
-  } else if (sel === 'prod') {
-    host.value = 'production.broker.example.com';
-    user.value = 'admin'; pass.value = 'secret'; tls.checked = true;
-  } else if (sel === 'local') {
-    host.value = 'localhost';
-    user.value = ''; pass.value = ''; tls.checked = false;
-  }
-}
+      port.value = '1883'; // Requested constant port
 
-// ── Socket ─────────────────────────────────────────────────────────────────
-const socket = io();
+      if (sel === 'sitlng') {
+        host.value = 'sitlng.edge.solx.sg-lab.safevue.ai';
+        user.value = 'admin'; pass.value = 'magellanx'; tls.checked = true;
+      } else if (sel === 'prod') {
+        host.value = 'production.broker.example.com';
+        user.value = 'admin'; pass.value = 'secret'; tls.checked = true;
+      } else if (sel === 'local') {
+        host.value = 'localhost';
+        user.value = ''; pass.value = ''; tls.checked = false;
+      }
+    }
 
-socket.on('connect', () => {
-  console.log('[WS] connected');
-  if (state.isRestarting) {
-    console.log('[RESTART] Server back up, refreshing page...');
-    window.location.reload();
-  }
-});
+    // ── Socket ─────────────────────────────────────────────────────────────────
+    const socket = io();
 
-socket.on('mqtt_status', s => {
-  state.connected = s.connected;
-  const dot = document.getElementById('statusDot');
-  const txt = document.getElementById('statusText');
-  const btn = document.getElementById('connectBtn');
+    socket.on('connect', () => {
+      console.log('[WS] connected');
+      if (state.isRestarting) {
+        console.log('[RESTART] Server back up, refreshing page...');
+        window.location.reload();
+      }
+    });
 
-  if (s.connected) {
-    dot.className = 'status-dot online';
-    txt.textContent = 'Connected · ' + s.broker;
-    btn.textContent = 'Disconnect';
-    btn.classList.add('disconnecting');
-  } else {
-    dot.className = 'status-dot' + (s.error && s.error !== 'Disconnected' ? ' error' : '');
-    txt.textContent = s.error || 'Not connected';
-    btn.textContent = 'Connect';
-    btn.classList.remove('disconnecting');
-  }
-});
+    socket.on('mqtt_status', s => {
+      state.connected = s.connected;
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusText');
+      const btn = document.getElementById('connectBtn');
 
-let incomingMsgQueue = [];
+      if (s.connected) {
+        dot.className = 'status-dot online';
+        txt.textContent = 'Connected · ' + s.broker;
+        btn.textContent = 'Disconnect';
+        btn.classList.add('disconnecting');
+      } else {
+        dot.className = 'status-dot' + (s.error && s.error !== 'Disconnected' ? ' error' : '');
+        txt.textContent = s.error || 'Not connected';
+        btn.textContent = 'Connect';
+        btn.classList.remove('disconnecting');
+      }
+    });
 
-socket.on('new_message', msg => {
-  incomingMsgQueue.push(msg);
-});
+    let incomingMsgQueue = [];
 
-// Throttle DOM updates to max 4 times a second
-setInterval(() => {
-  if (incomingMsgQueue.length === 0) return;
-  
-  const batch = incomingMsgQueue.splice(0, 200);
-  let needsTopicRefresh = false;
-  let needsMsgRefresh = false;
+    socket.on('new_message', msg => {
+      incomingMsgQueue.push(msg);
+    });
 
-  batch.forEach(msg => {
-    const t = msg.topic;
-    if (!state.topics[t]) state.topics[t] = [];
-    
-    state.topics[t].unshift(msg);
-    if (state.topics[t].length > 100) state.topics[t].pop(); // Keep 100 in memory
-    
-    needsTopicRefresh = true;
-    if (state.activeTopic === t) needsMsgRefresh = true;
-  });
+    // Throttle DOM updates to max 4 times a second
+    setInterval(() => {
+      if (incomingMsgQueue.length === 0) return;
 
-  if (needsTopicRefresh) refreshTopicList();
-  if (needsMsgRefresh) {
-    renderMsgList();
-  }
-}, 250);
+      const batch = incomingMsgQueue.splice(0, 200);
+      let needsTopicRefresh = false;
+      let needsMsgRefresh = false;
 
-socket.on('decode_result', result => {
-  const el = document.getElementById('m-result');
-  el.style.display = 'block';
-  el.innerHTML = colorJson(result.decoded || result);
-});
+      batch.forEach(msg => {
+        const t = msg.topic;
+        if (!state.topics[t]) state.topics[t] = [];
 
-socket.on('proto_reloaded', data => {
-  state.proto.filename = data.filename;
-  state.proto.topicCount = data.topic_count;
-  refreshProtoUI();
-  
-  // Refresh the supported topics tab content since patterns/types might have changed
-  const panel = document.getElementById('supported-panel');
-  delete panel.dataset.loaded;
-  if (state.activeTab === 'sup') loadSupportedTopics();
-});
+        state.topics[t].unshift(msg);
+        if (state.topics[t].length > 100) state.topics[t].pop(); // Keep 100 in memory
 
-// ── MQTT connect/disconnect ─────────────────────────────────────────────────
-async function toggleConnect() {
-  if (state.connected) {
-    await fetch('/api/mqtt/disconnect', {method: 'POST'});
-    return;
-  }
-  const host = document.getElementById('inp-host').value.trim() || 'localhost';
-  const port = parseInt(document.getElementById('inp-port').value) || 1883;
-  const username = document.getElementById('inp-user').value.trim();
-  const password = document.getElementById('inp-pass').value;
-  const tls = document.getElementById('inp-tls') ? document.getElementById('inp-tls').checked : false;
+        needsTopicRefresh = true;
+        if (state.activeTopic === t) needsMsgRefresh = true;
+      });
 
-  await fetch('/api/mqtt/connect', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({host, port, username, password, tls})
-  });
-  isConnected = true;
-}
+      if (needsTopicRefresh) refreshTopicList();
+      if (needsMsgRefresh) {
+        renderMsgList();
+      }
+    }, 250);
 
-// ── Topic sidebar ───────────────────────────────────────────────────────────
-function getTopicCategory(topic) {
-  if (topic.includes('/sensor/')) return {cls:'type-sensor', label:'sensor'};
-  if (topic.startsWith('cmd/')) return {cls:'type-cmd', label:'cmd'};
-  if (topic.includes('/evt')) return {cls:'type-evt', label:'event'};
-  if (topic.includes('/metric/')) return {cls:'type-metric', label:'metric'};
-  if (topic.includes('/alert/') || topic.includes('/config')) return {cls:'type-cfg', label:'config'};
-  return {cls:'type-unknown', label:'data'};
-}
+    socket.on('decode_result', result => {
+      const el = document.getElementById('m-result');
+      el.style.display = 'block';
+      el.innerHTML = colorJson(result.decoded || result);
+    });
 
-function topicIcon(topic) {
-  if (topic.includes('/sensor/heartrate') || topic.includes('/sensor/hrv'))
-    return `<svg viewBox="0 0 14 14" fill="none"><path d="M1 7h2l2-4 2 8 2-4 1 2 1-1h2" stroke="#00d4a0" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  if (topic.includes('/evt'))
-    return `<svg viewBox="0 0 14 14" fill="none"><path d="M7 2v5l3 2" stroke="#f59e0b" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="5.5" stroke="#f59e0b" stroke-width="1.2"/></svg>`;
-  if (topic.startsWith('cmd/'))
-    return `<svg viewBox="0 0 14 14" fill="none"><path d="M2 4l4 3-4 3" stroke="#60a5fa" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10h4" stroke="#60a5fa" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-  if (topic.includes('/metric/'))
-    return `<svg viewBox="0 0 14 14" fill="none"><path d="M2 7.5h2l1.5-3 1.5 5 2-2h3" stroke="#a78bfa" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  if (topic.includes('/alert/') || topic.includes('/config'))
-    return `<svg viewBox="0 0 14 14" fill="none"><path d="M7 2v5M7 9.5v1" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12l5-10 5 10H2z" stroke="#f87171" stroke-width="1.2"/></svg>`;
-  return `<svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="#6b7280" stroke-width="1.2"/><circle cx="7" cy="7" r="2" fill="#6b7280"/></svg>`;
-}
+    socket.on('proto_reloaded', data => {
+      state.proto.filename = data.filename;
+      state.proto.topicCount = data.topic_count;
+      refreshProtoUI();
 
-let filterText = '';
-function filterTopics(v) { 
-  filterText = v.toLowerCase(); 
-  refreshTopicList(); 
-  renderMsgList();
-}
+      // Refresh the supported topics tab content since patterns/types might have changed
+      const panel = document.getElementById('supported-panel');
+      delete panel.dataset.loaded;
+      if (state.activeTab === 'sup') loadSupportedTopics();
+    });
 
-function setView(view) {
-  state.view = view;
-  document.body.className = 'view-' + view;
-}
+    // ── MQTT connect/disconnect ─────────────────────────────────────────────────
+    async function toggleConnect() {
+      if (state.connected) {
+        await fetch('/api/mqtt/disconnect', { method: 'POST' });
+        return;
+      }
+      const host = document.getElementById('inp-host').value.trim() || 'localhost';
+      const port = parseInt(document.getElementById('inp-port').value) || 1883;
+      const username = document.getElementById('inp-user').value.trim();
+      const password = document.getElementById('inp-pass').value;
+      const tls = document.getElementById('inp-tls') ? document.getElementById('inp-tls').checked : false;
 
-function setSearchMode(mode) {
-  state.searchMode = mode;
-  document.getElementById('sm-topic').className = 'toggle-btn' + (mode === 'topic' ? ' active' : '');
-  document.getElementById('sm-payload').className = 'toggle-btn' + (mode === 'payload' ? ' active' : '');
-  document.getElementById('topicSearch').placeholder = mode === 'topic' ? 'Filter topics…' : 'Search in payloads…';
-  refreshTopicList();
-  renderMsgList();
-}
+      await fetch('/api/mqtt/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host, port, username, password, tls })
+      });
+      isConnected = true;
+    }
 
-function setAutoScroll(on) {
-  state.autoScroll = on;
-  document.getElementById('btn-scroll-on').className = 'toggle-btn' + (on ? ' active' : '');
-  document.getElementById('btn-scroll-off').className = 'toggle-btn' + (!on ? ' active' : '');
-}
+    // ── Topic sidebar ───────────────────────────────────────────────────────────
+    function getTopicCategory(topic) {
+      if (topic.includes('/sensor/')) return { cls: 'type-sensor', label: 'sensor' };
+      if (topic.startsWith('cmd/')) return { cls: 'type-cmd', label: 'cmd' };
+      if (topic.includes('/evt')) return { cls: 'type-evt', label: 'event' };
+      if (topic.includes('/metric/')) return { cls: 'type-metric', label: 'metric' };
+      if (topic.includes('/alert/') || topic.includes('/config')) return { cls: 'type-cfg', label: 'config' };
+      return { cls: 'type-unknown', label: 'data' };
+    }
 
-function topicMatches(topic) {
-  if (!filterText) return true;
-  if (state.searchMode === 'topic') return topic.toLowerCase().includes(filterText);
-  
-  // Search in payloads of this topic
-  const msgs = state.topics[topic] || [];
-  return msgs.some(m => {
-    if (m.error) return m.error.toLowerCase().includes(filterText);
-    if (!m.decoded) return false;
-    // Fast JSON string search
-    return JSON.stringify(m.decoded).toLowerCase().includes(filterText);
-  });
-}
+    function topicIcon(topic) {
+      if (topic.includes('/sensor/heartrate') || topic.includes('/sensor/hrv'))
+        return `<svg viewBox="0 0 14 14" fill="none"><path d="M1 7h2l2-4 2 8 2-4 1 2 1-1h2" stroke="#00d4a0" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      if (topic.includes('/evt'))
+        return `<svg viewBox="0 0 14 14" fill="none"><path d="M7 2v5l3 2" stroke="#f59e0b" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="5.5" stroke="#f59e0b" stroke-width="1.2"/></svg>`;
+      if (topic.startsWith('cmd/'))
+        return `<svg viewBox="0 0 14 14" fill="none"><path d="M2 4l4 3-4 3" stroke="#60a5fa" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10h4" stroke="#60a5fa" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+      if (topic.includes('/metric/'))
+        return `<svg viewBox="0 0 14 14" fill="none"><path d="M2 7.5h2l1.5-3 1.5 5 2-2h3" stroke="#a78bfa" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      if (topic.includes('/alert/') || topic.includes('/config'))
+        return `<svg viewBox="0 0 14 14" fill="none"><path d="M7 2v5M7 9.5v1" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12l5-10 5 10H2z" stroke="#f87171" stroke-width="1.2"/></svg>`;
+      return `<svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="#6b7280" stroke-width="1.2"/><circle cx="7" cy="7" r="2" fill="#6b7280"/></svg>`;
+    }
 
-function refreshTopicList() {
-  const list = document.getElementById('topic-list');
-  const empty = document.getElementById('liveEmpty');
-  const topics = Object.keys(state.topics).filter(t => topicMatches(t));
+    let filterText = '';
+    function filterTopics(v) {
+      filterText = v.toLowerCase();
+      refreshTopicList();
+      renderMsgList();
+    }
 
-  if (!topics.length) {
-    empty.style.display = 'block';
-    // remove old items
-    list.querySelectorAll('.topic-item').forEach(e => e.remove());
-    return;
-  }
-  empty.style.display = 'none';
+    function setView(view) {
+      state.view = view;
+      document.body.className = 'view-' + view;
+    }
 
-  // Rebuild only new/updated items
-  topics.sort().forEach(t => {
-    let el = document.getElementById('ti-' + CSS.escape(t));
-    const msgs = state.topics[t] || [];
-    const count = msgs.length;
-    const cat = getTopicCategory(t);
+    function setSearchMode(mode) {
+      state.searchMode = mode;
+      document.getElementById('sm-topic').className = 'toggle-btn' + (mode === 'topic' ? ' active' : '');
+      document.getElementById('sm-payload').className = 'toggle-btn' + (mode === 'payload' ? ' active' : '');
+      document.getElementById('topicSearch').placeholder = mode === 'topic' ? 'Filter topics…' : 'Search in payloads…';
+      refreshTopicList();
+      renderMsgList();
+    }
 
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'topic-item';
-      el.id = 'ti-' + CSS.escape(t);
-      el.onclick = () => selectTopic(t);
-      el.innerHTML = `
+    function setAutoScroll(on) {
+      state.autoScroll = on;
+      document.getElementById('btn-scroll-on').className = 'toggle-btn' + (on ? ' active' : '');
+      document.getElementById('btn-scroll-off').className = 'toggle-btn' + (!on ? ' active' : '');
+    }
+
+    function topicMatches(topic) {
+      if (!filterText) return true;
+      if (state.searchMode === 'topic') return topic.toLowerCase().includes(filterText);
+
+      // Search in payloads of this topic
+      const msgs = state.topics[topic] || [];
+      return msgs.some(m => {
+        if (m.error) return m.error.toLowerCase().includes(filterText);
+        if (!m.decoded) return false;
+        // Fast JSON string search
+        return JSON.stringify(m.decoded).toLowerCase().includes(filterText);
+      });
+    }
+
+    function refreshTopicList() {
+      const list = document.getElementById('topic-list');
+      const empty = document.getElementById('liveEmpty');
+      const topics = Object.keys(state.topics).filter(t => topicMatches(t));
+
+      if (!topics.length) {
+        empty.style.display = 'block';
+        // remove old items
+        list.querySelectorAll('.topic-item').forEach(e => e.remove());
+        return;
+      }
+      empty.style.display = 'none';
+
+      // Rebuild only new/updated items
+      topics.sort().forEach(t => {
+        let el = document.getElementById('ti-' + CSS.escape(t));
+        const msgs = state.topics[t] || [];
+        const count = msgs.length;
+        const cat = getTopicCategory(t);
+
+        if (!el) {
+          el = document.createElement('div');
+          el.className = 'topic-item';
+          el.id = 'ti-' + CSS.escape(t);
+          el.onclick = () => selectTopic(t);
+          el.innerHTML = `
         <div class="topic-icon">${topicIcon(t)}</div>
         <div class="topic-meta">
           <div class="topic-name" title="${t}">${t}</div>
           <div class="topic-sub"><span class="msg-type-badge ${cat.cls}">${cat.label}</span></div>
         </div>
         <div class="topic-badge" id="badge-${CSS.escape(t)}">${count}</div>`;
-      list.appendChild(el);
-    } else {
-      const badge = document.getElementById('badge-' + CSS.escape(t));
-      if (badge) {
-        badge.textContent = count;
-        badge.classList.add('new');
-        setTimeout(() => badge.classList.remove('new'), 600);
-      }
+          list.appendChild(el);
+        } else {
+          const badge = document.getElementById('badge-' + CSS.escape(t));
+          if (badge) {
+            badge.textContent = count;
+            badge.classList.add('new');
+            setTimeout(() => badge.classList.remove('new'), 600);
+          }
+        }
+
+        if (state.activeTopic === t) el.classList.add('active');
+        else el.classList.remove('active');
+      });
     }
 
-    if (state.activeTopic === t) el.classList.add('active');
-    else el.classList.remove('active');
-  });
-}
+    function selectTopic(t) {
+      state.activeTopic = t;
+      state.selectedMsg = null;
 
-function selectTopic(t) {
-  state.activeTopic = t;
-  state.selectedMsg = null;
+      document.querySelectorAll('.topic-item').forEach(e => e.classList.remove('active'));
+      const el = document.getElementById('ti-' + CSS.escape(t));
+      if (el) el.classList.add('active');
 
-  document.querySelectorAll('.topic-item').forEach(e => e.classList.remove('active'));
-  const el = document.getElementById('ti-' + CSS.escape(t));
-  if (el) el.classList.add('active');
+      document.getElementById('topicTitle').textContent = '— ' + t;
 
-  document.getElementById('topicTitle').textContent = '— ' + t;
-  
-  // Mobile: Switch to messages view
-  if (window.innerWidth <= 850) {
-    setView('messages');
-  }
-  renderMsgList();
-  renderDetail(null);
-}
+      // Mobile: Switch to messages view
+      if (window.innerWidth <= 850) {
+        setView('messages');
+      }
+      renderMsgList();
+      renderDetail(null);
+    }
 
-// ── Message list ────────────────────────────────────────────────────────────
-function renderMsgList() {
-  const list = document.getElementById('msg-list');
-  const empty = document.getElementById('msgEmpty');
-  let msgs = state.activeTopic ? (state.topics[state.activeTopic] || []) : [];
+    // ── Message list ────────────────────────────────────────────────────────────
+    function renderMsgList() {
+      const list = document.getElementById('msg-list');
+      const empty = document.getElementById('msgEmpty');
+      let msgs = state.activeTopic ? (state.topics[state.activeTopic] || []) : [];
 
-  if (filterText && state.searchMode === 'payload') {
-    msgs = msgs.filter(m => {
-      if (m.error) return m.error.toLowerCase().includes(filterText);
-      if (!m.decoded) return false;
-      return JSON.stringify(m.decoded).toLowerCase().includes(filterText);
-    });
-  }
+      if (filterText && state.searchMode === 'payload') {
+        msgs = msgs.filter(m => {
+          if (m.error) return m.error.toLowerCase().includes(filterText);
+          if (!m.decoded) return false;
+          return JSON.stringify(m.decoded).toLowerCase().includes(filterText);
+        });
+      }
 
-  list.innerHTML = '';
-  if (!msgs.length) {
-    list.appendChild(empty);
-    empty.style.display = 'block';
-    empty.textContent = filterText && state.searchMode === 'payload' ? 'No payloads match your search.' : 'No messages for this topic yet.';
-    return;
-  }
+      list.innerHTML = '';
+      if (!msgs.length) {
+        list.appendChild(empty);
+        empty.style.display = 'block';
+        empty.textContent = filterText && state.searchMode === 'payload' ? 'No payloads match your search.' : 'No messages for this topic yet.';
+        return;
+      }
 
-  msgs.forEach((msg, i) => {
-    const row = buildMsgRow(msg, i);
-    list.appendChild(row);
-  });
-}
+      msgs.forEach((msg, i) => {
+        const row = buildMsgRow(msg, i);
+        list.appendChild(row);
+      });
+    }
 
-function prependMsgRow(msg) {
-  if (!state.activeTopic) return;
-  if (filterText && state.searchMode === 'payload') {
-    const text = msg.error ? msg.error.toLowerCase() : (msg.decoded ? JSON.stringify(msg.decoded).toLowerCase() : '');
-    if (!text.includes(filterText)) return;
-  }
-  const list = document.getElementById('msg-list');
-  const empty = document.getElementById('msgEmpty');
-  empty.style.display = 'none';
+    function prependMsgRow(msg) {
+      if (!state.activeTopic) return;
+      if (filterText && state.searchMode === 'payload') {
+        const text = msg.error ? msg.error.toLowerCase() : (msg.decoded ? JSON.stringify(msg.decoded).toLowerCase() : '');
+        if (!text.includes(filterText)) return;
+      }
+      const list = document.getElementById('msg-list');
+      const empty = document.getElementById('msgEmpty');
+      empty.style.display = 'none';
 
-  const existing = list.querySelectorAll('.msg-row');
-  if (existing.length >= 50) existing[existing.length - 1].remove();
+      const existing = list.querySelectorAll('.msg-row');
+      if (existing.length >= 50) existing[existing.length - 1].remove();
 
-  const row = buildMsgRow(msg, 0);
-  list.insertBefore(row, list.firstChild);
+      const row = buildMsgRow(msg, 0);
+      list.insertBefore(row, list.firstChild);
 
-  // Auto-scroll logic: only if the toggle is on
-  if (state.autoScroll) {
-    // If we're at the top, or close enough, keep it centered
-    list.scrollTop = 0;
-  }
+      // Auto-scroll logic: only if the toggle is on
+      if (state.autoScroll) {
+        // If we're at the top, or close enough, keep it centered
+        list.scrollTop = 0;
+      }
 
-  // re-index
-  list.querySelectorAll('.msg-row').forEach((r, i) => r.dataset.idx = i);
-}
+      // re-index
+      list.querySelectorAll('.msg-row').forEach((r, i) => r.dataset.idx = i);
+    }
 
-function buildMsgRow(msg, idx) {
-  const row = document.createElement('div');
-  row.className = 'msg-row';
-  row.dataset.idx = idx;
-  row.onclick = () => selectMsg(msg);
+    function buildMsgRow(msg, idx) {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.dataset.idx = idx;
+      row.onclick = () => selectMsg(msg);
 
-  const ts = new Date(msg.ts);
-  const timeStr = ts.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  const cat = getTopicCategory(msg.topic);
+      const ts = new Date(msg.ts);
+      const timeStr = ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const cat = getTopicCategory(msg.topic);
 
-  const preview = msg.error
-    ? `⚠ ${msg.error}`
-    : msg.decoded
-    ? generateSmartPreview(msg.topic, msg.decoded)
-    : '(no decoded payload)';
+      const preview = msg.error
+        ? `⚠ ${msg.error}`
+        : msg.decoded
+          ? generateSmartPreview(msg.topic, msg.decoded)
+          : '(no decoded payload)';
 
-  row.innerHTML = `
+      row.innerHTML = `
     <div class="msg-ts">${timeStr}</div>
     <div style="min-width:0; overflow:hidden">
       <span class="msg-type-badge ${cat.cls}" style="margin-right:6px">${msg.message_type || 'unknown'}</span>
@@ -954,108 +1981,108 @@ function buildMsgRow(msg, idx) {
     </div>
     <div class="msg-size">${msg.payload_size}B</div>`;
 
-  return row;
-}
-
-function generateSmartPreview(topic, decoded) {
-  if (topic.includes('panic/req') && decoded.panic_data) return `Panic from ${decoded.user_id || 'Unknown'} (Device: ${decoded.panic_data.device_id})`;
-  if (topic.includes('heartrate')) return `HR: ${decoded.heart_rate || '--'} bpm`;
-  if (topic.includes('sensor/temp')) return `Temp: ${decoded.skin_temperature || '--'} °C`;
-  if (topic.includes('evt') && decoded.event_type) return `Event: ${decoded.event_type}`;
-  if (topic.includes('app/watch/version')) return `Version: ${decoded.app_version}`;
-  return previewJson(decoded);
-}
-
-function selectMsg(msg) {
-  state.selectedMsg = msg;
-  document.querySelectorAll('.msg-row').forEach(r => r.classList.remove('selected'));
-  
-  // Mobile: Switch to details view
-  if (window.innerWidth <= 850) {
-    setView('details');
-  }
-  renderDetail(msg);
-}
-
-function clearMessages() {
-  if (!state.activeTopic) return;
-  state.topics[state.activeTopic] = [];
-  renderMsgList();
-  renderDetail(null);
-  refreshTopicList();
-}
-
-// ── Detail panel ────────────────────────────────────────────────────────────
-function switchDtab(tab) {
-  state.dtab = tab;
-  document.querySelectorAll('.dtab').forEach(e => e.classList.remove('active'));
-  document.getElementById('dtab-' + tab).classList.add('active');
-  if (state.selectedMsg) renderDetail(state.selectedMsg);
-}
-
-function renderDetail(msg) {
-  const el = document.getElementById('detail-content');
-  
-
-  if (!msg) {
-    el.innerHTML = '<div class="detail-empty">Click a message to inspect its decoded payload.</div>';
-    return;
-  }
-
-  if (state.dtab === 'decoded') {
-    if (msg.error) {
-      el.innerHTML = `<div style="color:var(--red);font-size:12px">⚠ ${escHtml(msg.error)}</div>`;
-    } else if (msg.decoded) {
-      el.innerHTML = colorJson(msg.decoded);
-    } else {
-      el.innerHTML = '<div class="detail-empty">No decoded payload available.</div>';
+      return row;
     }
-  } else if (state.dtab === 'raw') {
-    el.innerHTML = `<div style="word-break:break-all;color:var(--muted);font-size:11px">${escHtml(msg.raw_b64 || '')}</div>`;
-  } else {
-    // meta
-    const ts = new Date(msg.ts);
-    el.innerHTML = `
+
+    function generateSmartPreview(topic, decoded) {
+      if (topic.includes('panic/req') && decoded.panic_data) return `Panic from ${decoded.user_id || 'Unknown'} (Device: ${decoded.panic_data.device_id})`;
+      if (topic.includes('heartrate')) return `HR: ${decoded.heart_rate || '--'} bpm`;
+      if (topic.includes('sensor/temp')) return `Temp: ${decoded.skin_temperature || '--'} °C`;
+      if (topic.includes('evt') && decoded.event_type) return `Event: ${decoded.event_type}`;
+      if (topic.includes('app/watch/version')) return `Version: ${decoded.app_version}`;
+      return previewJson(decoded);
+    }
+
+    function selectMsg(msg) {
+      state.selectedMsg = msg;
+      document.querySelectorAll('.msg-row').forEach(r => r.classList.remove('selected'));
+
+      // Mobile: Switch to details view
+      if (window.innerWidth <= 850) {
+        setView('details');
+      }
+      renderDetail(msg);
+    }
+
+    function clearMessages() {
+      if (!state.activeTopic) return;
+      state.topics[state.activeTopic] = [];
+      renderMsgList();
+      renderDetail(null);
+      refreshTopicList();
+    }
+
+    // ── Detail panel ────────────────────────────────────────────────────────────
+    function switchDtab(tab) {
+      state.dtab = tab;
+      document.querySelectorAll('.dtab').forEach(e => e.classList.remove('active'));
+      document.getElementById('dtab-' + tab).classList.add('active');
+      if (state.selectedMsg) renderDetail(state.selectedMsg);
+    }
+
+    function renderDetail(msg) {
+      const el = document.getElementById('detail-content');
+
+
+      if (!msg) {
+        el.innerHTML = '<div class="detail-empty">Click a message to inspect its decoded payload.</div>';
+        return;
+      }
+
+      if (state.dtab === 'decoded') {
+        if (msg.error) {
+          el.innerHTML = `<div style="color:var(--red);font-size:12px">⚠ ${escHtml(msg.error)}</div>`;
+        } else if (msg.decoded) {
+          el.innerHTML = colorJson(msg.decoded);
+        } else {
+          el.innerHTML = '<div class="detail-empty">No decoded payload available.</div>';
+        }
+      } else if (state.dtab === 'raw') {
+        el.innerHTML = `<div style="word-break:break-all;color:var(--muted);font-size:11px">${escHtml(msg.raw_b64 || '')}</div>`;
+      } else {
+        // meta
+        const ts = new Date(msg.ts);
+        el.innerHTML = `
       <div class="meta-grid">
         <div class="meta-card"><div class="meta-label">Topic</div><div class="meta-value" style="color:var(--blue)">${escHtml(msg.topic)}</div></div>
-        <div class="meta-card"><div class="meta-label">Message type</div><div class="meta-value" style="color:var(--accent)">${escHtml(msg.message_type||'unknown')}</div></div>
+        <div class="meta-card"><div class="meta-label">Message type</div><div class="meta-value" style="color:var(--accent)">${escHtml(msg.message_type || 'unknown')}</div></div>
         <div class="meta-card"><div class="meta-label">Payload size</div><div class="meta-value">${msg.payload_size} bytes</div></div>
         <div class="meta-card"><div class="meta-label">Time</div><div class="meta-value">${ts.toLocaleString()}</div></div>
         <div class="meta-card"><div class="meta-label">QoS</div><div class="meta-value">${msg.qos !== undefined ? msg.qos : '—'}</div></div>
         <div class="meta-card"><div class="meta-label">Retained</div><div class="meta-value">${msg.retained !== undefined ? msg.retained : '—'}</div></div>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Description</div>
-      <div style="font-size:12px;color:var(--text);margin-bottom:1rem">${escHtml(msg.description||'—')}</div>`;
-  }
-}
+      <div style="font-size:12px;color:var(--text);margin-bottom:1rem">${escHtml(msg.description || '—')}</div>`;
+      }
+    }
 
-function copyDetail() {
-  const msg = state.selectedMsg;
-  if (!msg) return;
-  const text = state.dtab === 'raw'
-    ? (msg.raw_b64 || '')
-    : JSON.stringify(state.dtab === 'meta' ? {topic:msg.topic,message_type:msg.message_type,payload_size:msg.payload_size,ts:msg.ts,qos:msg.qos,retained:msg.retained,description:msg.description} : msg.decoded, null, 2);
-  navigator.clipboard.writeText(text).catch(() => {});
-}
+    function copyDetail() {
+      const msg = state.selectedMsg;
+      if (!msg) return;
+      const text = state.dtab === 'raw'
+        ? (msg.raw_b64 || '')
+        : JSON.stringify(state.dtab === 'meta' ? { topic: msg.topic, message_type: msg.message_type, payload_size: msg.payload_size, ts: msg.ts, qos: msg.qos, retained: msg.retained, description: msg.description } : msg.decoded, null, 2);
+      navigator.clipboard.writeText(text).catch(() => { });
+    }
 
-// ── Supported topics tab ────────────────────────────────────────────────────
-function switchTab(tab) {
-  state.activeTab = tab;
-  document.getElementById('tab-live').className = 'stab' + (tab === 'live' ? ' active' : '');
-  document.getElementById('tab-sup').className = 'stab' + (tab === 'sup' ? ' active' : '');
-  document.getElementById('topic-list').style.display = tab === 'live' ? 'block' : 'none';
-  document.getElementById('supported-panel').style.display = tab === 'sup' ? 'block' : 'none';
-  document.getElementById('topicSearch').placeholder = tab === 'live' ? 'Filter topics…' : 'Filter patterns…';
+    // ── Supported topics tab ────────────────────────────────────────────────────
+    function switchTab(tab) {
+      state.activeTab = tab;
+      document.getElementById('tab-live').className = 'stab' + (tab === 'live' ? ' active' : '');
+      document.getElementById('tab-sup').className = 'stab' + (tab === 'sup' ? ' active' : '');
+      document.getElementById('topic-list').style.display = tab === 'live' ? 'block' : 'none';
+      document.getElementById('supported-panel').style.display = tab === 'sup' ? 'block' : 'none';
+      document.getElementById('topicSearch').placeholder = tab === 'live' ? 'Filter topics…' : 'Filter patterns…';
 
-  if (tab === 'sup') loadSupportedTopics();
-}
+      if (tab === 'sup') loadSupportedTopics();
+    }
 
-async function loadSupportedTopics() {
-  const panel = document.getElementById('supported-panel');
-  if (panel.dataset.loaded) return;
-  const res = await fetch('/api/supported-topics');
-  const topics = await res.json();
-  panel.innerHTML = topics.map(t => `
+    async function loadSupportedTopics() {
+      const panel = document.getElementById('supported-panel');
+      if (panel.dataset.loaded) return;
+      const res = await fetch('/api/supported-topics');
+      const topics = await res.json();
+      panel.innerHTML = topics.map(t => `
     <div class="sup-item">
       <div class="sup-pattern">${escHtml(t.pattern)}</div>
       <div class="sup-desc">${escHtml(t.description)}</div>
@@ -1065,258 +2092,259 @@ async function loadSupportedTopics() {
         ${t.retained ? '<span class="sup-badge ret">Retained</span>' : ''}
       </div>
     </div>`).join('');
-  panel.dataset.loaded = '1';
-}
-
-// ── Manual decode ───────────────────────────────────────────────────────────
-function openManual() {
-  document.getElementById('manual-panel').classList.add('open');
-  document.getElementById('m-result').style.display = 'none';
-  document.getElementById('m-result').innerHTML = '';
-}
-function closeManual() { document.getElementById('manual-panel').classList.remove('open'); }
-
-function runManual() {
-  const topic = document.getElementById('m-topic').value.trim();
-  const payload = document.getElementById('m-payload').value.trim();
-  if (!topic || !payload) return;
-  socket.emit('manual_decode', {topic, payload});
-}
-
-// Close on backdrop click
-document.getElementById('manual-panel').addEventListener('click', e => {
-  if (e.target === document.getElementById('manual-panel')) closeManual();
-});
-
-// ── JSON syntax colouring & Tree View ─────────────────────────────────────────
-function colorJson(obj, isLast = true) {
-  if (obj === null) return `<span class="jnull">null</span>${isLast?'':','}`;
-  if (typeof obj === 'boolean') return `<span class="jb">${obj}</span>${isLast?'':','}`;
-  if (typeof obj === 'number') return `<span class="jn">${obj}</span>${isLast?'':','}`;
-  if (typeof obj === 'string') return `<span class="js">"${escHtml(obj)}"</span>${isLast?'':','}`;
-
-  const isArray = Array.isArray(obj);
-  const keys = Object.keys(obj);
-  
-  if (!keys.length) return `<span class="jp">${isArray?'[]':'{}'}</span>${isLast?'':','}`;
-
-  const openB = isArray ? '[' : '{';
-  const closeB = isArray ? ']' : '}';
-  const items = keys.map((k, i) => {
-    const last = i === keys.length - 1;
-    const keyStr = isArray ? '' : `<span class="jk">"${escHtml(k)}"</span><span class="jp">: </span>`;
-    return `<div style="padding-left:16px">${keyStr}${colorJson(obj[k], last)}</div>`;
-  }).join('');
-
-  return `<span class="j-toggle jp" onclick="toggleJNode(this)" style="cursor:pointer;user-select:none">▼ ${openB}</span><div class="j-children">${items}</div><span class="jp">${closeB}</span>${isLast?'':','}`;
-}
-
-window.toggleJNode = function(el) {
-  const children = el.nextElementSibling;
-  if(children.style.display === 'none') {
-    children.style.display = 'block';
-    el.textContent = el.textContent.replace('▶', '▼');
-  } else {
-    children.style.display = 'none';
-    el.textContent = el.textContent.replace('▼', '▶');
-  }
-};
-
-function previewJson(obj) {
-  const entries = Object.entries(obj);
-  if (!entries.length) return '{}';
-  return entries.slice(0, 3).map(([k, v]) => {
-    const val = typeof v === 'object' ? '{…}' : String(v).slice(0, 30);
-    return `${k}: ${val}`;
-  }).join('  ');
-}
-
-function exportHistory() {
-  if (!state.activeTopic) return;
-  const msgs = state.topics[state.activeTopic] || [];
-  if (!msgs.length) return;
-
-  const data = JSON.stringify(msgs, null, 2);
-  const blob = new Blob([data], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const safeName = state.activeTopic.replace(/[\/\\?%*:|"<>]/g, '-');
-  a.href = url;
-  a.download = `mqtt-export-${safeName}-${new Date().getTime()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Proto Upload Logic ─────────────────────────────────────────────────────
-function openProto() {
-  document.getElementById('proto-panel').classList.add('open');
-  clearProtoFile();
-}
-
-function closeProto() {
-  document.getElementById('proto-panel').classList.remove('open');
-}
-
-function onProtoFileChosen(input) {
-  const file = input.files[0];
-  if (!file) return;
-  
-  const errorEl = document.getElementById('protoError');
-  const successEl = document.getElementById('protoSuccess');
-  errorEl.classList.remove('visible');
-  successEl.classList.remove('visible');
-
-  if (!file.name.toLowerCase().endsWith('.proto')) {
-    errorEl.textContent = 'Error: Only .proto files are allowed.';
-    errorEl.classList.add('visible');
-    input.value = '';
-    return;
-  }
-
-  document.getElementById('protoFileName').textContent = file.name;
-  document.getElementById('protoFileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
-  document.getElementById('protoFileChosen').classList.add('visible');
-  document.getElementById('protoDrop').style.display = 'none';
-  
-  const btn = document.getElementById('protoUploadBtn');
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  btn.style.cursor = 'pointer';
-}
-
-function clearProtoFile() {
-  const input = document.getElementById('protoFileInput');
-  input.value = '';
-  document.getElementById('protoFileChosen').classList.remove('visible');
-  document.getElementById('protoDrop').style.display = 'block';
-  document.getElementById('protoError').classList.remove('visible');
-  document.getElementById('protoSuccess').classList.remove('visible');
-  
-  const btn = document.getElementById('protoUploadBtn');
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
-  btn.style.cursor = 'not-allowed';
-}
-
-async function uploadProto() {
-  const input = document.getElementById('protoFileInput');
-  const file = input.files[0];
-  if (!file) return;
-
-  const btn = document.getElementById('protoUploadBtn');
-  const badge = document.getElementById('proto-badge');
-  const errorEl = document.getElementById('protoError');
-  const successEl = document.getElementById('protoSuccess');
-
-  btn.disabled = true;
-  btn.textContent = 'Uploading...';
-  badge.classList.add('uploading');
-  errorEl.classList.remove('visible');
-  successEl.classList.remove('visible');
-
-  const formData = new FormData();
-  formData.append('proto_file', file);
-
-  try {
-    const res = await fetch('/api/proto/upload', {
-      method: 'POST',
-      body: formData
-    });
-    
-    const result = await res.json();
-    
-    if (res.ok) {
-      state.isRestarting = true; // Mark that we expect a reboot
-      successEl.textContent = result.message || 'Proto uploaded! Restarting server...';
-      successEl.classList.add('visible');
-      btn.textContent = 'Restarting...';
-      // Close modal after a bit, but the page will likely reload soon anyway
-      setTimeout(() => {
-        closeProto();
-      }, 2000);
-    } else {
-      throw new Error(result.error || 'Upload failed');
+      panel.dataset.loaded = '1';
     }
-  } catch (err) {
-    errorEl.textContent = err.message;
-    errorEl.classList.add('visible');
-    btn.disabled = false;
-    btn.textContent = 'Upload & Reload';
-  } finally {
-    badge.classList.remove('uploading');
-  }
-}
 
-async function fetchProtoInfo() {
-  const res = await fetch('/api/proto/info');
-  const data = await res.json();
-  state.proto.filename = data.filename;
-  state.proto.topicCount = data.topic_count;
-  refreshProtoUI();
-}
+    // ── Manual decode ───────────────────────────────────────────────────────────
+    function openManual() {
+      document.getElementById('manual-panel').classList.add('open');
+      document.getElementById('m-result').style.display = 'none';
+      document.getElementById('m-result').innerHTML = '';
+    }
+    function closeManual() { document.getElementById('manual-panel').classList.remove('open'); }
 
-function refreshProtoUI() {
-  const badge = document.getElementById('proto-badge');
-  const countSpan = document.getElementById('proto-topic-count');
-  
-  countSpan.textContent = `${state.proto.topicCount} topics`;
-  badge.title = `Active Proto: ${state.proto.filename || 'None'}`;
-  
-  // Add a quick success flash
-  badge.classList.add('success');
-  setTimeout(() => badge.classList.remove('success'), 2000);
-}
+    function runManual() {
+      const topic = document.getElementById('m-topic').value.trim();
+      const payload = document.getElementById('m-payload').value.trim();
+      if (!topic || !payload) return;
+      socket.emit('manual_decode', { topic, payload });
+    }
 
-// Drag and drop handlers
-const dropZone = document.getElementById('protoDrop');
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-  dropZone.addEventListener(evt, e => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, false);
-});
+    // Close on backdrop click
+    document.getElementById('manual-panel').addEventListener('click', e => {
+      if (e.target === document.getElementById('manual-panel')) closeManual();
+    });
 
-['dragenter', 'dragover'].forEach(evt => {
-  dropZone.addEventListener(evt, () => dropZone.classList.add('drag-over'), false);
-});
+    // ── JSON syntax colouring & Tree View ─────────────────────────────────────────
+    function colorJson(obj, isLast = true) {
+      if (obj === null) return `<span class="jnull">null</span>${isLast ? '' : ','}`;
+      if (typeof obj === 'boolean') return `<span class="jb">${obj}</span>${isLast ? '' : ','}`;
+      if (typeof obj === 'number') return `<span class="jn">${obj}</span>${isLast ? '' : ','}`;
+      if (typeof obj === 'string') return `<span class="js">"${escHtml(obj)}"</span>${isLast ? '' : ','}`;
 
-['dragleave', 'drop'].forEach(evt => {
-  dropZone.addEventListener(evt, () => dropZone.classList.remove('drag-over'), false);
-});
+      const isArray = Array.isArray(obj);
+      const keys = Object.keys(obj);
 
-dropZone.addEventListener('drop', e => {
-  const dt = e.dataTransfer;
-  const files = dt.files;
-  document.getElementById('protoFileInput').files = files;
-  onProtoFileChosen(document.getElementById('protoFileInput'));
-}, false);
+      if (!keys.length) return `<span class="jp">${isArray ? '[]' : '{}'}</span>${isLast ? '' : ','}`;
 
-// Backdrop click for proto modal
-document.getElementById('proto-panel').addEventListener('click', e => {
-  if (e.target === document.getElementById('proto-panel')) closeProto();
-});
+      const openB = isArray ? '[' : '{';
+      const closeB = isArray ? ']' : '}';
+      const items = keys.map((k, i) => {
+        const last = i === keys.length - 1;
+        const keyStr = isArray ? '' : `<span class="jk">"${escHtml(k)}"</span><span class="jp">: </span>`;
+        return `<div style="padding-left:16px">${keyStr}${colorJson(obj[k], last)}</div>`;
+      }).join('');
 
-// ── Poll for any messages already stored (page refresh) ────────────────────
-async function loadInitialState() {
-  // Set initial view state for mobile
-  document.body.className = 'view-topics';
-  
-  await fetchProtoInfo();
-  const res = await fetch('/api/topics');
-  const topics = await res.json();
-  for (const [t, meta] of Object.entries(topics)) {
-    const msgsRes = await fetch('/api/messages/' + encodeURIComponent(t));
-    const msgs = await msgsRes.json();
-    state.topics[t] = msgs;
-  }
-  refreshTopicList();
-}
+      return `<span class="j-toggle jp" onclick="toggleJNode(this)" style="cursor:pointer;user-select:none">▼ ${openB}</span><div class="j-children">${items}</div><span class="jp">${closeB}</span>${isLast ? '' : ','}`;
+    }
 
-loadInitialState();
-</script>
+    window.toggleJNode = function (el) {
+      const children = el.nextElementSibling;
+      if (children.style.display === 'none') {
+        children.style.display = 'block';
+        el.textContent = el.textContent.replace('▶', '▼');
+      } else {
+        children.style.display = 'none';
+        el.textContent = el.textContent.replace('▼', '▶');
+      }
+    };
+
+    function previewJson(obj) {
+      const entries = Object.entries(obj);
+      if (!entries.length) return '{}';
+      return entries.slice(0, 3).map(([k, v]) => {
+        const val = typeof v === 'object' ? '{…}' : String(v).slice(0, 30);
+        return `${k}: ${val}`;
+      }).join('  ');
+    }
+
+    function exportHistory() {
+      if (!state.activeTopic) return;
+      const msgs = state.topics[state.activeTopic] || [];
+      if (!msgs.length) return;
+
+      const data = JSON.stringify(msgs, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeName = state.activeTopic.replace(/[\/\\?%*:|"<>]/g, '-');
+      a.href = url;
+      a.download = `mqtt-export-${safeName}-${new Date().getTime()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ── Proto Upload Logic ─────────────────────────────────────────────────────
+    function openProto() {
+      document.getElementById('proto-panel').classList.add('open');
+      clearProtoFile();
+    }
+
+    function closeProto() {
+      document.getElementById('proto-panel').classList.remove('open');
+    }
+
+    function onProtoFileChosen(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const errorEl = document.getElementById('protoError');
+      const successEl = document.getElementById('protoSuccess');
+      errorEl.classList.remove('visible');
+      successEl.classList.remove('visible');
+
+      if (!file.name.toLowerCase().endsWith('.proto')) {
+        errorEl.textContent = 'Error: Only .proto files are allowed.';
+        errorEl.classList.add('visible');
+        input.value = '';
+        return;
+      }
+
+      document.getElementById('protoFileName').textContent = file.name;
+      document.getElementById('protoFileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+      document.getElementById('protoFileChosen').classList.add('visible');
+      document.getElementById('protoDrop').style.display = 'none';
+
+      const btn = document.getElementById('protoUploadBtn');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
+
+    function clearProtoFile() {
+      const input = document.getElementById('protoFileInput');
+      input.value = '';
+      document.getElementById('protoFileChosen').classList.remove('visible');
+      document.getElementById('protoDrop').style.display = 'block';
+      document.getElementById('protoError').classList.remove('visible');
+      document.getElementById('protoSuccess').classList.remove('visible');
+
+      const btn = document.getElementById('protoUploadBtn');
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+    }
+
+    async function uploadProto() {
+      const input = document.getElementById('protoFileInput');
+      const file = input.files[0];
+      if (!file) return;
+
+      const btn = document.getElementById('protoUploadBtn');
+      const badge = document.getElementById('proto-badge');
+      const errorEl = document.getElementById('protoError');
+      const successEl = document.getElementById('protoSuccess');
+
+      btn.disabled = true;
+      btn.textContent = 'Uploading...';
+      badge.classList.add('uploading');
+      errorEl.classList.remove('visible');
+      successEl.classList.remove('visible');
+
+      const formData = new FormData();
+      formData.append('proto_file', file);
+
+      try {
+        const res = await fetch('/api/proto/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          state.isRestarting = true; // Mark that we expect a reboot
+          successEl.textContent = result.message || 'Proto uploaded! Restarting server...';
+          successEl.classList.add('visible');
+          btn.textContent = 'Restarting...';
+          // Close modal after a bit, but the page will likely reload soon anyway
+          setTimeout(() => {
+            closeProto();
+          }, 2000);
+        } else {
+          throw new Error(result.error || 'Upload failed');
+        }
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.add('visible');
+        btn.disabled = false;
+        btn.textContent = 'Upload & Reload';
+      } finally {
+        badge.classList.remove('uploading');
+      }
+    }
+
+    async function fetchProtoInfo() {
+      const res = await fetch('/api/proto/info');
+      const data = await res.json();
+      state.proto.filename = data.filename;
+      state.proto.topicCount = data.topic_count;
+      refreshProtoUI();
+    }
+
+    function refreshProtoUI() {
+      const badge = document.getElementById('proto-badge');
+      const countSpan = document.getElementById('proto-topic-count');
+
+      countSpan.textContent = `${state.proto.topicCount} topics`;
+      badge.title = `Active Proto: ${state.proto.filename || 'None'}`;
+
+      // Add a quick success flash
+      badge.classList.add('success');
+      setTimeout(() => badge.classList.remove('success'), 2000);
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('protoDrop');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropZone.addEventListener(evt, () => dropZone.classList.add('drag-over'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, () => dropZone.classList.remove('drag-over'), false);
+    });
+
+    dropZone.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      document.getElementById('protoFileInput').files = files;
+      onProtoFileChosen(document.getElementById('protoFileInput'));
+    }, false);
+
+    // Backdrop click for proto modal
+    document.getElementById('proto-panel').addEventListener('click', e => {
+      if (e.target === document.getElementById('proto-panel')) closeProto();
+    });
+
+    // ── Poll for any messages already stored (page refresh) ────────────────────
+    async function loadInitialState() {
+      // Set initial view state for mobile
+      document.body.className = 'view-topics';
+
+      await fetchProtoInfo();
+      const res = await fetch('/api/topics');
+      const topics = await res.json();
+      for (const [t, meta] of Object.entries(topics)) {
+        const msgsRes = await fetch('/api/messages/' + encodeURIComponent(t));
+        const msgs = await msgsRes.json();
+        state.topics[t] = msgs;
+      }
+      refreshTopicList();
+    }
+
+    loadInitialState();
+  </script>
 </body>
+
 </html>
