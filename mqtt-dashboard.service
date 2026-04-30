@@ -1,0 +1,13 @@
+[Unit]
+Description=MQTT Protobuf Decoder Dashboard
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/proto-simulator
+Environment="ACCESS_PASSWORD=decoder@solx"
+ExecStart=/home/ubuntu/proto-simulator/.venv/bin/gunicorn -k eventlet -w 1 --bind 0.0.0.0:8080 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
