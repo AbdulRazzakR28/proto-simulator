@@ -1426,15 +1426,16 @@
       <div class="conn-form">
         <select id="broker-select" onchange="applyBrokerPreset()"
           style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:11px;padding:4px 8px;outline:none;height:28px;cursor:pointer">
+          <option value="" disabled selected>Select Environment</option>
           <option value="custom">Custom</option>
-          <option value="sitlng" selected>Sitlng Broker</option>
+          <option value="sitlng">Sitlng Broker</option>
           <option value="prod">Production Server</option>
           <option value="local">Localhost</option>
         </select>
-        <input id="inp-host" placeholder="broker host" value="sitlng.edge.solx.sg-lab.safevue.ai" />
+        <input id="inp-host" placeholder="broker host" value="" />
         <input id="inp-port" placeholder="port" value="1883" />
-        <input id="inp-user" placeholder="username" value="admin" />
-        <input id="inp-pass" type="password" placeholder="password" value="magellanx" />
+        <input id="inp-user" placeholder="username" value="" />
+        <input id="inp-pass" type="password" placeholder="password" value="" />
         <label
           style="color:var(--muted);font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;">
           <input type="checkbox" id="inp-tls" checked style="accent-color:var(--accent);"> SSL
@@ -1676,7 +1677,19 @@
     }
 
     // ── Socket ─────────────────────────────────────────────────────────────────
-    const socket = io();
+    const socket = io({
+      transports: ['websocket'],
+      upgrade: false
+    });
+
+    // Handle background tab throttling
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        console.log('[UI] Tab visible, forcing UI refresh...');
+        refreshTopicList();
+        renderMsgList();
+      }
+    });
 
     socket.on('connect', () => {
       console.log('[WS] connected');
