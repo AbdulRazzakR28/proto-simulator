@@ -1,118 +1,62 @@
-# MQTT Protobuf Decoder — Internal Dashboard
+# MQTT Protobuf Decoder Ultimate
 
-A secure, internal MQTTX-style web tool that connects to your MQTT broker,
-auto-decodes Protobuf payloads from all configured topics, and presents them
-in a live, searchable browser UI.
+A high-performance, real-time MQTT dashboard designed to decode binary Protobuf payloads into human-readable JSON. Hosted on AWS with automatic CI/CD integration.
 
----
+## 🚀 Live Environment
+*   **Production URL**: [http://54.162.252.58:8080](http://54.162.252.58:8080)
+*   **Production Password**: `decoder@solx`
 
-## Files
+## 🏗 Infrastructure Details
+*   **Host**: AWS EC2 (t3.micro)
+*   **OS**: Ubuntu 22.04 LTS
+*   **Process Manager**: `systemd` (Service: `mqtt-dashboard`)
+*   **WSGI Server**: Gunicorn (using `eventlet` worker)
 
-```
-mqttx_decoder/
-├── app.py            ← Flask server (main entry point)
-├── mqtt_pb2.py       ← Compiled Protobuf (generated from mqtt.proto)
-├── mqtt.proto        ← Source proto definition (reference only)
-├── requirements.txt  ← Python dependencies
-├── README.md
-└── templates/
-    ├── login.html    ← Password-protected login page
-    └── dashboard.html ← Main MQTTX-style dashboard
-```
+## 🔄 CI/CD Pipeline
+This repository uses **GitHub Actions** for automatic deployment. 
+*   **Workflow**: `.github/workflows/deploy.yml`
+*   **Trigger**: Any push or merge to the `main` branch.
+*   **Actions**:
+    1. Connects to AWS via SSH.
+    2. Pulls latest code from GitHub.
+    3. Restarts the `mqtt-dashboard` system service.
 
----
+## 🛠 Setup & Development
 
-## Setup
-
+### Local Installation
 ```bash
-# 1. Install dependencies
+# 1. Setup virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 2. (Optional) Change the password in app.py
-#    Edit the ACCESS_PASSWORD variable near the top of app.py
-
-# 3. Run
+# 3. Run development server
 python3 app.py
-
-# 4. Open in browser
-open http://localhost:5000
 ```
+*   **Local URL**: `http://localhost:8080`
+*   **Local Password**: `decoder2025`
 
-Default password: `decoder2025`  ← **Change this before deploying!**
-
----
-
-## Security
-
-- All routes return 401 unless the session is authenticated.
-- All WebSocket events are rejected for unauthenticated connections.
-- Password is SHA-256 hashed in memory; never stored or logged.
-- For production: set `SECRET_KEY` in `app.py` to a long random string,
-  run behind an HTTPS reverse proxy (nginx/caddy), and restrict access
-  by IP or VPN.
-
----
-
-## Features
-
-| Feature | Description |
-|---|---|
-| Live MQTT subscription | Connects to any broker; subscribes to `#` (all topics) |
-| Auto protobuf decode | Matches each topic to `TOPIC_MAP`; decodes Protobuf automatically |
-| MAC address formatting | `beacon_mac`, `device_mac`, `bssid` etc. shown as `AA:BB:CC:DD:EE:FF` |
-| Decoded JSON view | Syntax-coloured, readable JSON for every message |
-| Raw Base64 view | Original payload visible for verification |
-| Message metadata | QoS, retained, payload size, timestamp, message type |
-| Supported topics tab | Browse all configured topic patterns and their Protobuf types |
-| Manual decode | Paste any topic + Base64 string without live MQTT connection |
-| Login protection | Simple password gate; session-based auth |
-| In-memory ring buffer | Keeps last 50 messages per topic |
-
----
-
-## Adding new topics
-
-Edit the `_build_topic_map()` function in `app.py`:
-
-```python
-{"pattern": r"^dt/.+/sensor/newtype$", "type": mqtt_pb2.MyNewMessage,
- "desc": "My new sensor", "qos": 0, "retained": False},
-```
-
-That's it — no other changes needed.
-
----
-
-## Regenerating mqtt_pb2.py
-
-If you update `mqtt.proto`:
-
+### Server Management (AWS)
 ```bash
-pip install grpcio-tools
-python -m grpc_tools.protoc -I. --python_out=. mqtt.proto
+# Check service status
+sudo systemctl status mqtt-dashboard
+
+# Restart service manually
+sudo systemctl restart mqtt-dashboard
+
+# View real-time logs
+sudo journalctl -u mqtt-dashboard -f
 ```
 
----
+## 🔒 Security
+The `ACCESS_PASSWORD` is managed via environment variables. 
+*   **Production**: Set in `/etc/systemd/system/mqtt-dashboard.service`.
+*   **Local**: Defaults to `decoder2025` in `app.py`.
 
-## Production deployment (nginx example)
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name mqtt-decoder.internal;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-    }
-}
-```
-
-Run the app with gunicorn + eventlet:
-```bash
-pip install gunicorn eventlet
-gunicorn -k eventlet -w 1 app:app --bind 0.0.0.0:5000
-```
+## 📂 Key Files
+*   `app.py`: Main Flask & SocketIO application logic.
+*   `templates/dashboard.html`: Futuristic UI with background-sync persistence.
+*   `mqtt-dashboard.service`: Systemd configuration for AWS deployment.
+*   `.github/workflows/deploy.yml`: GitHub Actions deployment script.
