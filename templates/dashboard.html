@@ -5,9 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MQTT Decoder Ultimate</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/static/socket.io.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
 
     *,
     *::before,
@@ -1430,6 +1429,7 @@
           <option value="custom">Custom</option>
           <option value="sitlng">Sitlng Broker</option>
           <option value="prod">Production Server</option>
+          <option value="edge">Edge Env</option>
           <option value="local">Localhost</option>
         </select>
         <input id="inp-host" placeholder="broker host" value="" />
@@ -1670,6 +1670,9 @@
       } else if (sel === 'prod') {
         host.value = 'production.broker.example.com';
         user.value = 'admin'; pass.value = 'secret'; tls.checked = true;
+      } else if (sel === 'edge') {
+        host.value = '192.168.1.150';
+        user.value = 'admin'; pass.value = 'magellanx'; tls.checked = false;
       } else if (sel === 'local') {
         host.value = 'localhost';
         user.value = ''; pass.value = ''; tls.checked = false;
